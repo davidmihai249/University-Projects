@@ -23,7 +23,7 @@ public class FriendshipService {
     /**
      * @return the friendships repository
      */
-    public Repository<Tuple<Long>, Friendship> getFriendshipRepo() {
+    protected Repository<Tuple<Long>, Friendship> getFriendshipRepo() {
         return friendshipRepo;
     }
 

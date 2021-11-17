@@ -1,5 +1,6 @@
 package ui;
 
+import domain.FriendDTO;
 import org.jetbrains.annotations.NotNull;
 import domain.User;
 import domain.validators.FriendshipException;
@@ -39,6 +40,7 @@ public class ConsoleInterface {
                     case "6" -> userFriends(reader);
                     case "7" -> communitiesNumber();
                     case "8" -> biggestCommunity();
+                    case "9" -> friendsByMonth(reader);
                     default -> System.out.println("Invalid command!");
                 }
             }
@@ -47,7 +49,7 @@ public class ConsoleInterface {
             }
         }
     }
-    
+
     private String[] readUserAndFriend(@NotNull BufferedReader reader) throws IOException {
         System.out.print("Give user's first name: ");
         String firstName = reader.readLine();
@@ -134,6 +136,19 @@ public class ConsoleInterface {
             char dot = '\u00B0';
             System.out.println("\nBiggest community: ");
             friends.stream().map(u -> dot + " " + u.getFirstName() + " " + u.getLastName()).forEach(System.out::println);
+        }
+    }
+
+    private void friendsByMonth(@NotNull BufferedReader reader) throws IOException {
+        String[] nameList = readUser(reader);
+        System.out.print("Give friendships month: ");
+        String month = reader.readLine();
+        List<FriendDTO> friendDTOS = srv.getFriendshipByMonth(nameList[0], nameList[1], month);
+        if(friendDTOS.isEmpty()){
+            System.out.println("The user has no friends made in that month!");
+        }
+        else{
+            friendDTOS.forEach(f -> System.out.println(f.getFriend().getFirstName() + " | " + f.getFriend().getLastName() + " | " + f.getDate()));
         }
     }
 }

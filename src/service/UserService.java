@@ -22,7 +22,7 @@ public class UserService {
     /**
      * @return the user repository
      */
-    public Repository<Long, User> getUserRepo() {
+    protected Repository<Long, User> getUserRepo() {
         return userRepo;
     }
 
@@ -61,6 +61,9 @@ public class UserService {
      * @return the id of the user or null if the user doesn't exist
      */
     public @Nullable Long getUserID(String firstName, String lastName){
+        if(firstName == null || lastName == null || firstName.equals("") || lastName.equals("")){
+            throw new IllegalArgumentException("\nInvalid user name!");
+        }
         Iterable<User> allUsers = userRepo.findAll();
         for (User e : allUsers) {
             if (e.getFirstName().equals(firstName) && e.getLastName().equals(lastName)) {
