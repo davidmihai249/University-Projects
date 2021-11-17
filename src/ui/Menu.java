@@ -10,6 +10,7 @@ public class Menu {
             "6. Show all friends of a user",
             "7. Get communities number",
             "8. Get the biggest community",
+            "9. Show all friendships created in a certain month",
             "X. Close application"};
 
     public static void printMenu(){

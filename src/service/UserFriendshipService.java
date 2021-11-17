@@ -1,5 +1,6 @@
 package service;
 
+import domain.FriendDTO;
 import domain.Tuple;
 import org.jetbrains.annotations.NotNull;
 import domain.Friendship;
@@ -7,6 +8,7 @@ import domain.User;
 import domain.validators.FriendshipException;
 import repository.Repository;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.*;
 
 public class UserFriendshipService {
@@ -167,5 +169,66 @@ public class UserFriendshipService {
         Map<Long, List<Long>> userRelationships = new HashMap<>();
         userService.getUserRepo().findAll().forEach(u -> userRelationships.put(u.getId(), u.getFriends()));
         return userRelationships;
+    }
+
+    /**
+     * Return a list with all the friends of a user which were made in a certain month
+     * @param userFirstName first name of the user
+     * @param userLastName last name of the user
+     * @param month the month in which the friendship was made
+     * @return a list with FriendDTO objects
+     */
+    public List<FriendDTO> getFriendshipByMonth(String userFirstName, String userLastName, String month){
+        if(month == null || month.equals("")){
+            throw new IllegalArgumentException("\nInvalid month!");
+        }
+        Month enumMonth = getMonthByString(month);
+        if(enumMonth == null){
+            throw new IllegalArgumentException("\nInvalid month (make sure it's written in english with small letters)!");
+        }
+
+        Long userId = userService.getUserID(userFirstName,userLastName);
+        if (userId == null){
+            throw new IllegalArgumentException("\nInvalid user!");
+        }
+        List<Tuple<Long>> friendshipsIDs = friendshipService.getFriendships(userId);
+        List<Friendship> friendships = new ArrayList<>();
+        friendshipsIDs.forEach(t -> friendships.add(friendshipService.getFriendshipRepo().findOne(t)));
+
+        List<FriendDTO> friendDTOS = new ArrayList<>();
+        friendships
+                .stream()
+                .filter(f -> f.getDate().getMonth().equals(enumMonth))
+                .forEach(f -> {
+                    User friend = userService.getUserRepo().findOne(f.getId().getLeft());
+                    if(friend.getId().equals(userId)){
+                        friend = userService.getUserRepo().findOne(f.getId().getRight());
+                    }
+                    LocalDate date = f.getDate();
+                    friendDTOS.add(new FriendDTO(friend,date));
+                });
+        return friendDTOS;
+    }
+
+    /**
+     * @param month given string representing a month
+     * @return an enum with the correct month
+     */
+    private Month getMonthByString(String month){
+        return switch (month) {
+            case "january" -> Month.JANUARY;
+            case "february" -> Month.FEBRUARY;
+            case "march" -> Month.MARCH;
+            case "april" -> Month.APRIL;
+            case "may" -> Month.MAY;
+            case "june" -> Month.JUNE;
+            case "july" -> Month.JULY;
+            case "august" -> Month.AUGUST;
+            case "september" -> Month.SEPTEMBER;
+            case "october" -> Month.OCTOBER;
+            case "november" -> Month.NOVEMBER;
+            case "december" -> Month.DECEMBER;
+            default -> null;
+        };
     }
 }
