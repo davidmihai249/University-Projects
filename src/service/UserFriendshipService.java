@@ -172,6 +172,33 @@ public class UserFriendshipService {
     }
 
     /**
+     * Return a list with all the friendships that a user has
+     * @param UserFirstName first name of the user
+     * @param UserLastName last name of the user
+     * @return a list with FriendDTO objects
+     */
+    public List<FriendDTO> getAllFriendships(String UserFirstName,String UserLastName){
+        Long UserID = userService.getUserID(UserFirstName,UserLastName);
+        if(UserID == null){
+            throw new IllegalArgumentException("\nInvalid user!");
+        }
+        List<Tuple<Long>> friendshipsIDS = friendshipService.getFriendships(UserID);
+        List<Friendship> friendships = new ArrayList<>();
+        friendshipsIDS.forEach(t -> friendships.add(friendshipService.getFriendshipRepo().findOne(t)));
+
+        List<FriendDTO> friendDTOS = new ArrayList<>();
+        friendships
+                .stream()
+                .forEach(f -> {
+                            User friend = userService.getUserRepo().findOne(f.getId().getLeft());
+                            if(friend.getId().equals(UserID)){
+                                friend = userService.getUserRepo().findOne(f.getId().getRight());
+                            }
+                            LocalDate date = f.getDate();
+                            friendDTOS.add(new FriendDTO(friend,date));});
+        return friendDTOS;
+    }
+    /**
      * Return a list with all the friends of a user which were made in a certain month
      * @param userFirstName first name of the user
      * @param userLastName last name of the user
