@@ -41,6 +41,7 @@ public class ConsoleInterface {
                     case "7" -> communitiesNumber();
                     case "8" -> biggestCommunity();
                     case "9" -> friendsByMonth(reader);
+                    case "10" -> getAllFriends(reader);
                     default -> System.out.println("Invalid command!");
                 }
             }
@@ -149,6 +150,17 @@ public class ConsoleInterface {
         }
         else{
             friendDTOS.forEach(f -> System.out.println(f.getFriend().getFirstName() + " | " + f.getFriend().getLastName() + " | " + f.getDate()));
+        }
+    }
+
+    private void getAllFriends(@NotNull BufferedReader reader) throws IOException{
+        String[] nameList = readUser(reader);
+        List<FriendDTO> friendDTOS = srv.getAllFriendships(nameList[0],nameList[1]);
+        if(friendDTOS.isEmpty()){
+            System.out.println("The user has no friends!");
+        }
+        else{
+            friendDTOS.forEach(f-> System.out.println(f.getFriend().getFirstName() + "|" + f.getFriend().getLastName() + "|" + f.getDate()));
         }
     }
 }
