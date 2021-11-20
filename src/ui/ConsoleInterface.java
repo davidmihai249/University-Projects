@@ -1,11 +1,13 @@
 package ui;
 
 import domain.FriendDTO;
-import org.jetbrains.annotations.NotNull;
+import domain.FriendRequestDTO;
 import domain.User;
 import domain.validators.FriendshipException;
+import domain.validators.RequestException;
 import domain.validators.ValidationException;
-import service.UserFriendshipService;
+import org.jetbrains.annotations.NotNull;
+import service.UserFriendshipDbService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,9 +15,9 @@ import java.util.Collection;
 import java.util.List;
 
 public class ConsoleInterface {
-    private final UserFriendshipService srv;
+    private final UserFriendshipDbService srv;
 
-    public ConsoleInterface(UserFriendshipService srv) {
+    public ConsoleInterface(UserFriendshipDbService srv) {
        this.srv = srv;
     }
 
@@ -42,10 +44,13 @@ public class ConsoleInterface {
                     case "8" -> biggestCommunity();
                     case "9" -> friendsByMonth(reader);
                     case "10" -> getAllFriends(reader);
+                    case "11" -> addRequest(reader);
+                    case "12" -> allRequestsOfUser(reader);
+                    case "13" -> respondToRequest(reader);
                     default -> System.out.println("Invalid command!");
                 }
             }
-            catch (ValidationException | IllegalArgumentException | FriendshipException e){
+            catch (ValidationException | IllegalArgumentException | FriendshipException | RequestException e){
                 System.out.println(e.getMessage());
             }
         }
@@ -162,5 +167,44 @@ public class ConsoleInterface {
         else{
             friendDTOS.forEach(f-> System.out.println(f.getFriend().getFirstName() + "|" + f.getFriend().getLastName() + "|" + f.getDate()));
         }
+    }
+
+    private String[] readSenderAndReceiver(@NotNull BufferedReader reader) throws IOException {
+        System.out.print("Give sender's first name: ");
+        String senderFirstName = reader.readLine();
+        System.out.print("Give sender's last name: ");
+        String senderLastName = reader.readLine();
+        System.out.print("Give receiver's first name: ");
+        String receiverFirstName = reader.readLine();
+        System.out.print("Give receiver's last name: ");
+        String receiverLastName = reader.readLine();
+        return new String[] {senderFirstName,senderLastName,receiverFirstName,receiverLastName};
+    }
+
+    private void addRequest(BufferedReader reader) throws IOException {
+        String[] names = readSenderAndReceiver(reader);
+        srv.addFriendRequest(names[0],names[1],names[2],names[3]);
+        System.out.println("Friend request sent successfully!");
+    }
+
+    private void allRequestsOfUser(BufferedReader reader) throws IOException {
+        String[] name = readUser(reader);
+        List<FriendRequestDTO> requests = srv.getUsersRequests(name[0],name[1]);
+        char dot = '\u00B0';
+        if(requests.isEmpty()){
+            System.out.println("This user has no active friend requests!");
+        }
+        else{
+            System.out.println("All friend requests of the user: ");
+            requests.forEach(r -> System.out.println(dot + " " + r.getSender().getFirstName() + " " + r.getSender().getLastName() + " | " + r.getStatus()));
+        }
+    }
+
+    private void respondToRequest(BufferedReader reader) throws IOException {
+        String[] names = readSenderAndReceiver(reader);
+        System.out.print("New status (APPROVE or REJECT): ");
+        String status = reader.readLine();
+        srv.respondFriendRequest(names[0],names[1],names[2],names[3],status);
+        System.out.println("Friend request updated successfully!");
     }
 }
