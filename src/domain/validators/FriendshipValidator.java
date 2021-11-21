@@ -16,7 +16,7 @@ public class FriendshipValidator implements Validator<Friendship>{
             throw new ValidationException("UserId1 must not be null!");
         }
         if(entity.getId().getRight() == null) {
-            throw new ValidationException("UserId1 must not be null!");
+            throw new ValidationException("UserId2 must not be null!");
         }
         if(entity.getDate() == null){
             throw new ValidationException("Date must not be null!");
