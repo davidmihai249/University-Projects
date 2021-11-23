@@ -10,6 +10,7 @@ import repository.Repository;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
+import java.util.function.Predicate;
 
 public class UserFriendshipService {
     protected final UserService userService;
@@ -185,17 +186,20 @@ public class UserFriendshipService {
         List<Tuple<Long>> friendshipsIDS = friendshipService.getFriendships(UserID);
         List<Friendship> friendships = new ArrayList<>();
         friendshipsIDS.forEach(t -> friendships.add(friendshipService.getFriendshipRepo().findOne(t)));
+        Predicate<Friendship> checkUserID = f->f.getId().getLeft().equals(UserID) || f.getId().getRight().equals(UserID);
 
         List<FriendDTO> friendDTOS = new ArrayList<>();
         friendships
                 .stream()
+                .filter(checkUserID)
                 .forEach(f -> {
                             User friend = userService.getUserRepo().findOne(f.getId().getLeft());
                             if(friend.getId().equals(UserID)){
                                 friend = userService.getUserRepo().findOne(f.getId().getRight());
                             }
                             LocalDate date = f.getDate();
-                            friendDTOS.add(new FriendDTO(friend,date));});
+                            friendDTOS.add(new FriendDTO(friend,date));
+                });
         return friendDTOS;
     }
     /**
@@ -223,9 +227,10 @@ public class UserFriendshipService {
         friendshipsIDs.forEach(t -> friendships.add(friendshipService.getFriendshipRepo().findOne(t)));
 
         List<FriendDTO> friendDTOS = new ArrayList<>();
+        Predicate<Friendship> checkMonth = f -> f.getDate().getMonth().equals(enumMonth);
         friendships
                 .stream()
-                .filter(f -> f.getDate().getMonth().equals(enumMonth))
+                .filter(checkMonth)
                 .forEach(f -> {
                     User friend = userService.getUserRepo().findOne(f.getId().getLeft());
                     if(friend.getId().equals(userId)){

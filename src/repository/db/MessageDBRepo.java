@@ -127,11 +127,13 @@ public class MessageDBRepo implements Repository<Long, Message> {
                     Message replyMessage = findOne(replyID);
                     User senderUser = getSenderUser(messageID);
                     Message message =  new Message(senderUser,toUsers,messageText,dateTime,replyMessage);
+                    message.setId(messageID);
                     messages.add(message);
                 }
                 catch (IllegalArgumentException e){
                         User senderUser = getSenderUser(messageID);
                         Message message = new Message(senderUser, toUsers, messageText, dateTime, null);
+                        message.setId(messageID);
                         messages.add(message);
                 }
             }
@@ -144,6 +146,7 @@ public class MessageDBRepo implements Repository<Long, Message> {
 
     @Override
     public Message save(Message entity) {
+        validator.validate(entity);
         String sql = "insert into messages (message,date,reply_id) values (?,?,?)";
         try (Connection connection = DriverManager.getConnection(url, username, password);
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -157,12 +160,11 @@ public class MessageDBRepo implements Repository<Long, Message> {
                 ps.setLong(3,0);
             }
             ps.executeUpdate();
-            Long id = null;
+            Long id;
             if(entity.getReply()!=null) {
                 id = search_id(entity.getMessage(), entity.getDate(), entity.getReply().getId());
             }
-            else
-            {
+            else {
                 id = search_id(entity.getMessage(), entity.getDate(), 0L);
             }
             entity.setId(id);
