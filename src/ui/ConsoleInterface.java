@@ -1,8 +1,6 @@
 package ui;
 
-import domain.FriendDTO;
-import domain.FriendRequestDTO;
-import domain.User;
+import domain.*;
 import domain.validators.FriendshipException;
 import domain.validators.RequestException;
 import domain.validators.ValidationException;
@@ -11,6 +9,7 @@ import service.UserFriendshipDbService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 
@@ -47,6 +46,7 @@ public class ConsoleInterface {
                     case "11" -> addRequest(reader);
                     case "12" -> allRequestsOfUser(reader);
                     case "13" -> respondToRequest(reader);
+                    case "14" -> getConversation(reader);
                     default -> System.out.println("Invalid command!");
                 }
             }
@@ -206,5 +206,26 @@ public class ConsoleInterface {
         String status = reader.readLine();
         srv.respondFriendRequest(names[0],names[1],names[2],names[3],status);
         System.out.println("Friend request updated successfully!");
+    }
+
+    private void getConversation(BufferedReader reader) throws IOException {
+        System.out.print("Give first user's first name: ");
+        String user1FirstName = reader.readLine();
+        System.out.print("Give first user's last name: ");
+        String user1LastName = reader.readLine();
+        System.out.print("Give second user's first name: ");
+        String user2FirstName = reader.readLine();
+        System.out.print("Give second user's last name: ");
+        String user2LastName = reader.readLine();
+        List<Message> messages = srv.getFullConversation(new Tuple<>(user1FirstName,user1LastName), new Tuple<>(user2FirstName,user2LastName));
+        if(messages.isEmpty()){
+            System.out.println("These users don't have a conversation!");
+        }
+        else{
+            messages.forEach(m -> System.out.println(
+                    m.getDate().format(DateTimeFormatter.ISO_LOCAL_DATE) + " " +
+                    m.getDate().format(DateTimeFormatter.ISO_LOCAL_TIME) + " | " +
+                    m.getFromUser().getFirstName() + " " + m.getFromUser().getLastName() + ": " + m.getMessage()));
+        }
     }
 }

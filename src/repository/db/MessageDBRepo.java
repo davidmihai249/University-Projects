@@ -157,12 +157,11 @@ public class MessageDBRepo implements Repository<Long, Message> {
                 ps.setLong(3,0);
             }
             ps.executeUpdate();
-            Long id = null;
+            Long id;
             if(entity.getReply()!=null) {
                 id = search_id(entity.getMessage(), entity.getDate(), entity.getReply().getId());
             }
-            else
-            {
+            else {
                 id = search_id(entity.getMessage(), entity.getDate(), 0L);
             }
             entity.setId(id);

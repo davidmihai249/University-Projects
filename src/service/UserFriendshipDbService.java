@@ -4,16 +4,17 @@ import domain.*;
 import domain.validators.RequestException;
 import org.jetbrains.annotations.NotNull;
 import repository.Repository;
-
 import java.util.*;
 import java.util.stream.StreamSupport;
 
 public class UserFriendshipDbService extends UserFriendshipService{
     private final Repository<Tuple<Long>, FriendRequest> requestRepo;
+    private final Repository<Long, Message> messageRepo;
 
-    public UserFriendshipDbService(Repository<Long, User> userRepo, Repository<Tuple<Long>, Friendship> friendshipRepo, Repository<Tuple<Long>, FriendRequest> requestRepository) {
+    public UserFriendshipDbService(Repository<Long, User> userRepo, Repository<Tuple<Long>, Friendship> friendshipRepo, Repository<Tuple<Long>, FriendRequest> requestRepository, Repository<Long, Message> messageRepository) {
         super(userRepo, friendshipRepo);
         requestRepo = requestRepository;
+        messageRepo = messageRepository;
     }
 
     @Override
@@ -131,5 +132,17 @@ public class UserFriendshipDbService extends UserFriendshipService{
                 .filter(x -> x.getId().getRight().equals(receiverId))
                 .forEach(f -> usersRequests.add(new FriendRequestDTO(userService.getUserRepo().findOne(f.getId().getLeft()), f.getStatus())));
         return usersRequests;
+    }
+
+    public List<Message> getFullConversation(Tuple<String> firstUserNames, Tuple<String> secondUserNames){
+        User firstUser = userService.getUser(firstUserNames.getLeft(),firstUserNames.getRight());
+        User secondUser = userService.getUser(secondUserNames.getLeft(),secondUserNames.getRight());
+        Iterable<Message> allMessages = messageRepo.findAll();
+        Spliterator<Message> spliterator = allMessages.spliterator();
+        return StreamSupport.stream(spliterator, false)
+                .filter(m -> m.getFromUser().equals(firstUser) && m.getToUser().contains(secondUser)
+                          || m.getFromUser().equals(secondUser) && m.getToUser().contains(firstUser))
+                .sorted(Comparator.comparing(Message::getDate))
+                .toList();
     }
 }
