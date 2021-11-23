@@ -127,11 +127,13 @@ public class MessageDBRepo implements Repository<Long, Message> {
                     Message replyMessage = findOne(replyID);
                     User senderUser = getSenderUser(messageID);
                     Message message =  new Message(senderUser,toUsers,messageText,dateTime,replyMessage);
+                    message.setId(messageID);
                     messages.add(message);
                 }
                 catch (IllegalArgumentException e){
                         User senderUser = getSenderUser(messageID);
                         Message message = new Message(senderUser, toUsers, messageText, dateTime, null);
+                        message.setId(messageID);
                         messages.add(message);
                 }
             }
