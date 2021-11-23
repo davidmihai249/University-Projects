@@ -9,9 +9,12 @@ import service.UserFriendshipDbService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.SQLOutput;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Scanner;
 
 public class ConsoleInterface {
     private final UserFriendshipDbService srv;
@@ -47,6 +50,7 @@ public class ConsoleInterface {
                     case "12" -> allRequestsOfUser(reader);
                     case "13" -> respondToRequest(reader);
                     case "14" -> getConversation(reader);
+                    case "15" -> sendMessage(reader);
                     default -> System.out.println("Invalid command!");
                 }
             }
@@ -227,5 +231,37 @@ public class ConsoleInterface {
                     m.getDate().format(DateTimeFormatter.ISO_LOCAL_TIME) + " | " +
                     m.getFromUser().getFirstName() + " " + m.getFromUser().getLastName() + ": " + m.getMessage()));
         }
+    }
+
+    private void sendMessage(BufferedReader reader) throws IOException{
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Give your first name: ");
+        String user1FirstName = reader.readLine();
+        System.out.print("Give your last name: ");
+        String user1LastName = reader.readLine();
+        boolean STOP = true;
+        List<Tuple<String>> toUsers = new ArrayList<>();
+        while(STOP){
+            System.out.print("Give the first name of the user you want to send the message: ");
+            String user2FirstName = reader.readLine();
+            System.out.print("Give the last name of the user you want to send the message: ");
+            String user2LastName = reader.readLine();
+            toUsers.add(new Tuple<String>(user2FirstName,user2LastName));
+            System.out.println("Do you want to continue adding people?\n");
+            System.out.println("1.Yes.\n2.No.\nIntroduce the command:");
+            int resp = scanner.nextInt();
+            if(resp == 2){
+                STOP = false;
+            }
+            else{
+                if(resp!=1){
+                    throw new IllegalArgumentException("Invalid command!");
+                }
+            }
+        }
+        System.out.println("Type your message:");
+        scanner.nextLine();
+        String message = scanner.nextLine();
+        srv.sendMessage(user1FirstName,user1LastName,toUsers,message);
     }
 }

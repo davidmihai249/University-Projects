@@ -4,6 +4,8 @@ import domain.*;
 import domain.validators.RequestException;
 import org.jetbrains.annotations.NotNull;
 import repository.Repository;
+
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.StreamSupport;
 
@@ -150,5 +152,47 @@ public class UserFriendshipDbService extends UserFriendshipService{
                           || m.getFromUser().equals(secondUser) && m.getToUser().contains(firstUser))
                 .sorted(Comparator.comparing(Message::getDate))
                 .toList();
+    }
+
+    /**
+     * Sending a message to a user or a group of users.
+     * @param FirstNameFrom String for the first name of the user who sends the message.
+     * @param LastNameFrom String for the last name of the user who sends the message.
+     * @param toUsers List of tuple containing the first and last name of the users who receive the message.
+     * @param message String for the sent message.
+     */
+    public void sendMessage(String FirstNameFrom,String LastNameFrom,List<Tuple<String>> toUsers,String message){
+        Tuple<String> FromUserNames = new Tuple<>(FirstNameFrom,LastNameFrom);
+        if(toUsers.size() > 1) {
+            User user = userService.getUser(FirstNameFrom, LastNameFrom);
+            List<User> toUsersaux = new ArrayList<>();
+            for(Tuple<String> toUser: toUsers){
+                User user2 = userService.getUser(toUser.getLeft(),toUser.getRight());
+                toUsersaux.add(user2);
+            }
+            Message newMessage = new Message(user,toUsersaux,message,LocalDateTime.now(),getFullConversation(FromUserNames,toUsers.get(0)).get(getFullConversation(FromUserNames,toUsers.get(0)).size()-1));
+            messageRepo.save(newMessage);
+        }
+        else{
+            if(toUsers.size()==1) {
+                List<Message> messages = getFullConversation(FromUserNames,toUsers.get(0));
+                if(messages.isEmpty()){
+                    User user = userService.getUser(FirstNameFrom, LastNameFrom);
+                    User user2 = userService.getUser(toUsers.get(0).getLeft(), toUsers.get(0).getRight());
+                    List<User> toUsersaux = new ArrayList<>();
+                    toUsersaux.add(user2);
+                    Message newMessage = new Message(user,toUsersaux,message, LocalDateTime.now(),null);
+                    messageRepo.save(newMessage);
+                }
+                else{
+                    User user = userService.getUser(FirstNameFrom, LastNameFrom);
+                    User user2 = userService.getUser(toUsers.get(0).getLeft(), toUsers.get(0).getRight());
+                    List<User> toUsersaux = new ArrayList<>();
+                    toUsersaux.add(user2);
+                    Message newMessage = new Message(user,toUsersaux,message, LocalDateTime.now(),messages.get(messages.size()-1));
+                    messageRepo.save(newMessage);
+                }
+            }
+        }
     }
 }
