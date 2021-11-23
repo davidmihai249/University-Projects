@@ -9,12 +9,10 @@ import service.UserFriendshipDbService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.SQLOutput;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Scanner;
 
 public class ConsoleInterface {
     private final UserFriendshipDbService srv;
@@ -234,7 +232,6 @@ public class ConsoleInterface {
     }
 
     private void sendMessage(BufferedReader reader) throws IOException{
-        Scanner scanner = new Scanner(System.in);
         System.out.print("Give your first name: ");
         String user1FirstName = reader.readLine();
         System.out.print("Give your last name: ");
@@ -246,22 +243,26 @@ public class ConsoleInterface {
             String user2FirstName = reader.readLine();
             System.out.print("Give the last name of the user you want to send the message: ");
             String user2LastName = reader.readLine();
-            toUsers.add(new Tuple<String>(user2FirstName,user2LastName));
+            toUsers.add(new Tuple<>(user2FirstName,user2LastName));
             System.out.println("Do you want to continue adding people?\n");
             System.out.println("1.Yes.\n2.No.\nIntroduce the command:");
-            int resp = scanner.nextInt();
-            if(resp == 2){
-                STOP = false;
-            }
-            else{
-                if(resp!=1){
-                    throw new IllegalArgumentException("Invalid command!");
+            try{
+                int resp = Integer.parseInt(reader.readLine());
+                if(resp == 2){
+                    STOP = false;
+                }
+                else{
+                    if(resp!=1){
+                        throw new IllegalArgumentException("Invalid command!");
+                    }
                 }
             }
+            catch (NumberFormatException e){
+                throw new IllegalArgumentException("Command should be 1 or 2!");
+            }
         }
-        System.out.println("Type your message:");
-        scanner.nextLine();
-        String message = scanner.nextLine();
+        System.out.print("Type your message: ");
+        String message = reader.readLine();
         srv.sendMessage(user1FirstName,user1LastName,toUsers,message);
     }
 }

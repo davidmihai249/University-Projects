@@ -198,7 +198,8 @@ public class UserFriendshipService {
                                 friend = userService.getUserRepo().findOne(f.getId().getRight());
                             }
                             LocalDate date = f.getDate();
-                            friendDTOS.add(new FriendDTO(friend,date));});
+                            friendDTOS.add(new FriendDTO(friend,date));
+                });
         return friendDTOS;
     }
     /**
@@ -226,9 +227,10 @@ public class UserFriendshipService {
         friendshipsIDs.forEach(t -> friendships.add(friendshipService.getFriendshipRepo().findOne(t)));
 
         List<FriendDTO> friendDTOS = new ArrayList<>();
+        Predicate<Friendship> checkMonth = f -> f.getDate().getMonth().equals(enumMonth);
         friendships
                 .stream()
-                .filter(f -> f.getDate().getMonth().equals(enumMonth))
+                .filter(checkMonth)
                 .forEach(f -> {
                     User friend = userService.getUserRepo().findOne(f.getId().getLeft());
                     if(friend.getId().equals(userId)){
