@@ -134,6 +134,12 @@ public class UserFriendshipDbService extends UserFriendshipService{
         return usersRequests;
     }
 
+    /**
+     * Get the full conversation between two users
+     * @param firstUserNames tuple - containing the first and last name of first user
+     * @param secondUserNames tuple - containing the first and last name of second user
+     * @return a List with objects of type Message
+     */
     public List<Message> getFullConversation(Tuple<String> firstUserNames, Tuple<String> secondUserNames){
         User firstUser = userService.getUser(firstUserNames.getLeft(),firstUserNames.getRight());
         User secondUser = userService.getUser(secondUserNames.getLeft(),secondUserNames.getRight());
