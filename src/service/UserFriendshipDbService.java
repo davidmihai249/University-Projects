@@ -170,8 +170,17 @@ public class UserFriendshipDbService extends UserFriendshipService{
                 User user2 = userService.getUser(toUser.getLeft(),toUser.getRight());
                 toUsersaux.add(user2);
             }
-            Message newMessage = new Message(user,toUsersaux,message,LocalDateTime.now(),getFullConversation(FromUserNames,toUsers.get(0)).get(getFullConversation(FromUserNames,toUsers.get(0)).size()-1));
-            messageRepo.save(newMessage);
+            List<Message> fullConversation = getFullConversation(FromUserNames,toUsers.get(0));
+            int size = fullConversation.size();
+            if(size == 0){
+                Message newMessage = new Message(user,toUsersaux,message,LocalDateTime.now(),null);
+                messageRepo.save(newMessage);
+            }
+            else{
+                Message reply = fullConversation.get(size - 1);
+                Message newMessage = new Message(user,toUsersaux,message,LocalDateTime.now(),reply);
+                messageRepo.save(newMessage);
+            }
         }
         else{
             if(toUsers.size()==1) {

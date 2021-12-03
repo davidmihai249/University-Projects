@@ -244,7 +244,7 @@ public class ConsoleInterface {
             System.out.print("Give the last name of the user you want to send the message: ");
             String user2LastName = reader.readLine();
             toUsers.add(new Tuple<>(user2FirstName,user2LastName));
-            System.out.println("Do you want to continue adding people?\n");
+            System.out.println("Do you want to continue adding people?");
             System.out.println("1.Yes.\n2.No.\nIntroduce the command:");
             try{
                 int resp = Integer.parseInt(reader.readLine());
@@ -264,5 +264,6 @@ public class ConsoleInterface {
         System.out.print("Type your message: ");
         String message = reader.readLine();
         srv.sendMessage(user1FirstName,user1LastName,toUsers,message);
+        System.out.println("Message sent successfully!");
     }
 }
