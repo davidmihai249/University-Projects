@@ -146,7 +146,7 @@ public class MessageDBRepo implements Repository<Long, Message> {
 
     @Override
     public Message save(Message entity) {
-        validator.validate(entity);
+        //validator.validate(entity);
         String sql = "insert into messages (message,date,reply_id) values (?,?,?)";
         try (Connection connection = DriverManager.getConnection(url, username, password);
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -168,6 +168,7 @@ public class MessageDBRepo implements Repository<Long, Message> {
                 id = search_id(entity.getMessage(), entity.getDate(), 0L);
             }
             entity.setId(id);
+            validator.validate(entity);
             insert_corr(entity);
         } catch (SQLException e) {
             e.printStackTrace();
