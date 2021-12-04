@@ -17,6 +17,7 @@ public class Menu {
             "13. Respond to a friend request",
             "14. See the conversation between two users",
             "15. Send message.",
+            "16. Reply to a message",
             "X. Close application"};
 
     public static void printMenu(){
