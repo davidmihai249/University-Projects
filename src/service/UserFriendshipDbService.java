@@ -158,50 +158,37 @@ public class UserFriendshipDbService extends UserFriendshipService{
      * Sending a message to a user or a group of users.
      * @param FirstNameFrom String for the first name of the user who sends the message.
      * @param LastNameFrom String for the last name of the user who sends the message.
-     * @param toUsers List of tuple containing the first and last name of the users who receive the message.
-     * @param message String for the sent message.
+     * @param toUsersNames List of tuple containing the first and last name of the users who receive the message.
+     * @param messageText String for the sent message.
      */
-    public void sendMessage(String FirstNameFrom,String LastNameFrom,List<Tuple<String>> toUsers,String message){
-        Tuple<String> FromUserNames = new Tuple<>(FirstNameFrom,LastNameFrom);
-        if(toUsers.size() > 1) {
-            User user = userService.getUser(FirstNameFrom, LastNameFrom);
-            List<User> toUsersaux = new ArrayList<>();
-            for(Tuple<String> toUser: toUsers){
-                User user2 = userService.getUser(toUser.getLeft(),toUser.getRight());
-                toUsersaux.add(user2);
-            }
-            List<Message> fullConversation = getFullConversation(FromUserNames,toUsers.get(0));
-            int size = fullConversation.size();
-            if(size == 0){
-                Message newMessage = new Message(user,toUsersaux,message,LocalDateTime.now(),null);
-                messageRepo.save(newMessage);
-            }
-            else{
-                Message reply = fullConversation.get(size - 1);
-                Message newMessage = new Message(user,toUsersaux,message,LocalDateTime.now(),reply);
-                messageRepo.save(newMessage);
-            }
+    public void sendMessage(String FirstNameFrom,String LastNameFrom,List<Tuple<String>> toUsersNames,String messageText){
+        List<User> toUsers = new ArrayList<>();
+        toUsersNames.forEach(t -> toUsers.add(userService.getUser(t.getLeft(),t.getRight())));
+        Message message = new Message(userService.getUser(FirstNameFrom,LastNameFrom),toUsers,messageText,LocalDateTime.now(),null);
+        messageRepo.save(message);
+    }
+
+    /**
+     * Reply to a message
+     * @param FirstNameFrom String for the first name of the user who sends the message.
+     * @param LastNameFrom String for the last name of the user who sends the message.
+     * @param messageID The id of the message to be replied to.
+     * @param messageText String for the sent message.
+     */
+    public void replyMessage(String FirstNameFrom,String LastNameFrom, Long messageID, String messageText){
+        Message message = messageRepo.findOne(messageID);
+        User fromUser = message.getFromUser();
+        List<User> toUsers = message.getToUser();
+        Long senderID = userService.getUserID(FirstNameFrom,LastNameFrom);
+        User sender = userService.getUserRepo().findOne(senderID);
+        if(toUsers.contains(sender)){
+            List<User> toUser = new ArrayList<>();
+            toUser.add(fromUser);
+            Message reply = new Message(sender,toUser,messageText,LocalDateTime.now(),message);
+            messageRepo.save(reply);
         }
         else{
-            if(toUsers.size()==1) {
-                List<Message> messages = getFullConversation(FromUserNames,toUsers.get(0));
-                if(messages.isEmpty()){
-                    User user = userService.getUser(FirstNameFrom, LastNameFrom);
-                    User user2 = userService.getUser(toUsers.get(0).getLeft(), toUsers.get(0).getRight());
-                    List<User> toUsersaux = new ArrayList<>();
-                    toUsersaux.add(user2);
-                    Message newMessage = new Message(user,toUsersaux,message, LocalDateTime.now(),null);
-                    messageRepo.save(newMessage);
-                }
-                else{
-                    User user = userService.getUser(FirstNameFrom, LastNameFrom);
-                    User user2 = userService.getUser(toUsers.get(0).getLeft(), toUsers.get(0).getRight());
-                    List<User> toUsersaux = new ArrayList<>();
-                    toUsersaux.add(user2);
-                    Message newMessage = new Message(user,toUsersaux,message, LocalDateTime.now(),messages.get(messages.size()-1));
-                    messageRepo.save(newMessage);
-                }
-            }
+            throw new IllegalArgumentException("This user can't reply to that message!");
         }
     }
 }

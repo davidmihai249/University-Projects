@@ -49,6 +49,7 @@ public class ConsoleInterface {
                     case "13" -> respondToRequest(reader);
                     case "14" -> getConversation(reader);
                     case "15" -> sendMessage(reader);
+                    case "16" -> replyMessage(reader);
                     default -> System.out.println("Invalid command!");
                 }
             }
@@ -149,7 +150,7 @@ public class ConsoleInterface {
 
     private void friendsByMonth(@NotNull BufferedReader reader) throws IOException {
         String[] nameList = readUser(reader);
-        System.out.print("Give friendships month: ");
+        System.out.print("Give friendships month (ex: october): ");
         String month = reader.readLine();
         List<FriendDTO> friendDTOS = srv.getFriendshipByMonth(nameList[0], nameList[1], month);
         if(friendDTOS.isEmpty()){
@@ -167,7 +168,7 @@ public class ConsoleInterface {
             System.out.println("The user has no friends!");
         }
         else{
-            friendDTOS.forEach(f-> System.out.println(f.getFriend().getFirstName() + "|" + f.getFriend().getLastName() + "|" + f.getDate()));
+            friendDTOS.forEach(f-> System.out.println(f.getFriend().getFirstName() + " | " + f.getFriend().getLastName() + " | " + f.getDate()));
         }
     }
 
@@ -224,6 +225,7 @@ public class ConsoleInterface {
             System.out.println("These users don't have a conversation!");
         }
         else{
+            System.out.println();
             messages.forEach(m -> System.out.println(
                     m.getDate().format(DateTimeFormatter.ISO_LOCAL_DATE) + " " +
                     m.getDate().format(DateTimeFormatter.ISO_LOCAL_TIME) + " | " +
@@ -245,7 +247,7 @@ public class ConsoleInterface {
             String user2LastName = reader.readLine();
             toUsers.add(new Tuple<>(user2FirstName,user2LastName));
             System.out.println("Do you want to continue adding people?");
-            System.out.println("1.Yes.\n2.No.\nIntroduce the command:");
+            System.out.print("1.Yes.\n2.No.\nIntroduce the command: ");
             try{
                 int resp = Integer.parseInt(reader.readLine());
                 if(resp == 2){
@@ -265,5 +267,18 @@ public class ConsoleInterface {
         String message = reader.readLine();
         srv.sendMessage(user1FirstName,user1LastName,toUsers,message);
         System.out.println("Message sent successfully!");
+    }
+
+    private void replyMessage(BufferedReader reader) throws IOException {
+        System.out.print("Give your first name: ");
+        String userFirstName = reader.readLine();
+        System.out.print("Give your last name: ");
+        String userLastName = reader.readLine();
+        System.out.print("Give message id: ");
+        Long messageID = Long.parseLong(reader.readLine());
+        System.out.print("Type your message: ");
+        String messageText = reader.readLine();
+        srv.replyMessage(userFirstName,userLastName,messageID,messageText);
+        System.out.println("Reply sent successfully!");
     }
 }
