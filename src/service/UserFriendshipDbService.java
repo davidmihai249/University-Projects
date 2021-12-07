@@ -176,19 +176,24 @@ public class UserFriendshipDbService extends UserFriendshipService{
      * @param messageText String for the sent message.
      */
     public void replyMessage(String FirstNameFrom,String LastNameFrom, Long messageID, String messageText){
-        Message message = messageRepo.findOne(messageID);
-        User fromUser = message.getFromUser();
-        List<User> toUsers = message.getToUser();
-        Long senderID = userService.getUserID(FirstNameFrom,LastNameFrom);
-        User sender = userService.getUserRepo().findOne(senderID);
-        if(toUsers.contains(sender)){
-            List<User> toUser = new ArrayList<>();
-            toUser.add(fromUser);
-            Message reply = new Message(sender,toUser,messageText,LocalDateTime.now(),message);
-            messageRepo.save(reply);
+        try{
+            Message message = messageRepo.findOne(messageID);
+            User fromUser = message.getFromUser();
+            List<User> toUsers = message.getToUser();
+            Long senderID = userService.getUserID(FirstNameFrom,LastNameFrom);
+            User sender = userService.getUserRepo().findOne(senderID);
+            if(toUsers.contains(sender)){
+                List<User> toUser = new ArrayList<>();
+                toUser.add(fromUser);
+                Message reply = new Message(sender,toUser,messageText,LocalDateTime.now(),message);
+                messageRepo.save(reply);
+            }
+            else{
+                throw new IllegalArgumentException("This user can't reply to that message!");
+            }
         }
-        else{
-            throw new IllegalArgumentException("This user can't reply to that message!");
+        catch (NullPointerException e){
+            throw new IllegalArgumentException("Message id is invalid!");
         }
     }
 }
