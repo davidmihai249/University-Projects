@@ -53,7 +53,7 @@ public class ConsoleInterface {
                     default -> System.out.println("Invalid command!");
                 }
             }
-            catch (ValidationException | IllegalArgumentException | FriendshipException | RequestException e){
+            catch (ValidationException | IllegalArgumentException | FriendshipException | RequestException | NullPointerException e){
                 System.out.println(e.getMessage());
             }
         }
