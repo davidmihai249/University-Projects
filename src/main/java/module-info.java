@@ -1,4 +1,5 @@
-module com.example.socialnetworkgui {
+module main {
+    requires javafx.graphics;
     requires javafx.controls;
     requires javafx.fxml;
 
@@ -10,5 +11,7 @@ module com.example.socialnetworkgui {
     requires org.junit.jupiter.api;
 
     opens com.example.socialnetworkgui to javafx.fxml;
+    opens com.example.socialnetworkgui.controller to javafx.fxml;
     exports com.example.socialnetworkgui;
+    exports com.example.socialnetworkgui.controller;
 }
