@@ -57,10 +57,25 @@ public class UserDbRepo implements Repository<Long, User> {
         return users;
     }
 
+    public void save_login(String first_name,String last_name,String username,String password){
+        String sql = "INSERT INTO users (first_name, last_name,username,password) VALUES (?, ?,?,?)";
+        try(Connection connection = DriverManager.getConnection(url,username,password);
+            PreparedStatement ps = connection.prepareStatement(sql) )
+        {
+            ps.setString(1, first_name);
+            ps.setString(2, last_name);
+            ps.setString(3,username);
+            ps.setString(4,password);
+            ps.executeUpdate();
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public User save(User user) {
         validator.validate(user);
-        String sql = "INSERT INTO users (first_name, last_name) VALUES (?, ?)";
+        String sql = "INSERT INTO users (first_name, last_name,username,password) VALUES (?, ?,?,?)";
         try(Connection connection = DriverManager.getConnection(url,username,password);
             PreparedStatement ps = connection.prepareStatement(sql) )
         {
@@ -72,6 +87,23 @@ public class UserDbRepo implements Repository<Long, User> {
             e.printStackTrace();
         }
         return user;
+    }
+
+    public boolean findUserLogin(String username,String password){
+        try (Connection connection = DriverManager.getConnection(url,username,password);
+             PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE username=(?) AND password=(?)");)
+        {
+            ps.setString(1,username);
+            ps.setString(2,password);
+            ResultSet resultSet = ps.executeQuery();
+            if(resultSet.next()){
+                return true;
+            }
+            return false;
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @Override
