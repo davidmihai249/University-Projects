@@ -10,8 +10,13 @@ module main {
     requires org.jetbrains.annotations;
     requires org.junit.jupiter.api;
 
-    opens com.example.socialnetworkgui to javafx.fxml;
-    opens com.example.socialnetworkgui.controller to javafx.fxml;
     exports com.example.socialnetworkgui;
+    exports com.example.socialnetworkgui.domain;
+    opens com.example.socialnetworkgui.controller;
     exports com.example.socialnetworkgui.controller;
+    opens com.example.socialnetworkgui;
+    exports com.example.socialnetworkgui.service;
+    exports com.example.socialnetworkgui.utils.events;
+    exports com.example.socialnetworkgui.utils.observer;
+    exports com.example.socialnetworkgui.repository;
 }

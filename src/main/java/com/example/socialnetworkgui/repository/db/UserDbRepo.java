@@ -89,21 +89,31 @@ public class UserDbRepo implements Repository<Long, User> {
         return user;
     }
 
-    public boolean findUserLogin(String username,String password){
+    /**
+     * Return the user which tries to log in, or null if the credentials are invalid
+     * @param usernameString the username given by the user in text field
+     * @param passwordString the password given by the user in text field
+     * @return an object of type User, or null
+     */
+    public User findUserLogin(String usernameString,String passwordString){
         try (Connection connection = DriverManager.getConnection(url,username,password);
              PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE username=(?) AND password=(?)");)
         {
-            ps.setString(1,username);
-            ps.setString(2,password);
+            ps.setString(1,usernameString);
+            ps.setString(2,passwordString);
             ResultSet resultSet = ps.executeQuery();
             if(resultSet.next()){
-                return true;
+                Long id = resultSet.getLong("id");
+                String firstName = resultSet.getString("first_name");
+                String lastName = resultSet.getString("last_name");
+                User user = new User(firstName,lastName);
+                user.setId(id);
+                return user;
             }
-            return false;
         } catch (SQLException e){
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
     @Override

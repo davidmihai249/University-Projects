@@ -3,20 +3,29 @@ package com.example.socialnetworkgui.service;
 import com.example.socialnetworkgui.domain.*;
 import com.example.socialnetworkgui.domain.validators.RequestException;
 import com.example.socialnetworkgui.repository.Repository;
+import com.example.socialnetworkgui.repository.db.UserDbRepo;
+import com.example.socialnetworkgui.utils.events.UserFriendChangeEvent;
+import com.example.socialnetworkgui.utils.observer.Observable;
+import com.example.socialnetworkgui.utils.observer.Observer;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.StreamSupport;
 
-public class UserFriendshipDbService extends UserFriendshipService{
+public class UserFriendshipDbService extends UserFriendshipService implements Observable<UserFriendChangeEvent> {
     private final Repository<Tuple<Long>, FriendRequest> requestRepo;
     private final Repository<Long, Message> messageRepo;
+    private List<Observer<UserFriendChangeEvent>> observers=new ArrayList<>();
 
     public UserFriendshipDbService(Repository<Long, User> userRepo, Repository<Tuple<Long>, Friendship> friendshipRepo, Repository<Tuple<Long>, FriendRequest> requestRepository, Repository<Long, Message> messageRepository) {
         super(userRepo, friendshipRepo);
         requestRepo = requestRepository;
         messageRepo = messageRepository;
+    }
+
+    public Repository<Long, User> getUserRepo(){
+        return userService.getUserRepo();
     }
 
     @Override
@@ -195,5 +204,20 @@ public class UserFriendshipDbService extends UserFriendshipService{
         catch (NullPointerException e){
             throw new IllegalArgumentException("Message id is invalid!");
         }
+    }
+
+    @Override
+    public void addObserver(Observer<UserFriendChangeEvent> e) {
+        observers.add(e);
+    }
+
+    @Override
+    public void removeObserver(Observer<UserFriendChangeEvent> e) {
+        observers.remove(e);
+    }
+
+    @Override
+    public void notifyObservers(UserFriendChangeEvent t) {
+        observers.stream().forEach(x -> x.update(t));
     }
 }

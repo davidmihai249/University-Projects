@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="777.0" prefWidth="1033.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.socialnetworkgui.AccountController">
+   <children>
+      <VBox prefHeight="777.0" prefWidth="250.0" style="-fx-background-color: #00008B;">
+         <children>
+            <Pane prefHeight="133.0" prefWidth="250.0">
+               <children>
+                  <Label layoutX="45.0" layoutY="52.0" text="SocialNetwork" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="25.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+            <Button alignment="CENTER" mnemonicParsing="false" prefHeight="75.0" prefWidth="254.0" text="Friends" />
+            <Button fx:id="buttonAdd" alignment="CENTER" mnemonicParsing="false" onAction="#handleAddFriend" prefHeight="75.0" prefWidth="254.0" text="Add new friend" />
+            <Button fx:id="buttonRemove" alignment="CENTER" mnemonicParsing="false" onAction="#handleRemoveFriend" prefHeight="75.0" prefWidth="254.0" text="Remove friend" />
+            <Button fx:id="buttonRequests" alignment="CENTER" layoutX="10.0" layoutY="293.0" mnemonicParsing="false" onAction="#handleRemoveFriend" prefHeight="75.0" prefWidth="254.0" text="Show friend requests" />
+            <Button fx:id="buttonLogOut" alignment="CENTER" mnemonicParsing="false" onAction="#handleLogOut" prefHeight="75.0" prefWidth="254.0" text="Log out" />
+         </children></VBox>
+      <GridPane layoutX="279.0" layoutY="282.0" prefHeight="476.0" prefWidth="736.0">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints maxHeight="265.0" minHeight="10.0" prefHeight="69.0" vgrow="SOMETIMES" />
+          <RowConstraints fx:id="gridPaneTable" maxHeight="408.0" minHeight="10.0" prefHeight="405.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <TableView fx:id="tableView" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+              <columns>
+                <TableColumn fx:id="tableColumnFirstName" prefWidth="253.0" text="First Name" />
+                <TableColumn fx:id="tableColumnLastName" prefWidth="234.0" text="Last Name" />
+                  <TableColumn fx:id="tableColumnSince" prefWidth="248.0" text="Friends since" />
+              </columns>
+            </TableView>
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <TextField />
+                  <Button alignment="CENTER" mnemonicParsing="false" text="Button" />
+               </children>
+            </HBox>
+         </children>
+      </GridPane>
+   </children>
+</AnchorPane>
