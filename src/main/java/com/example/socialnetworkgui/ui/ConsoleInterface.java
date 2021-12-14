@@ -50,6 +50,7 @@ public class ConsoleInterface {
                     case "14" -> getConversation(reader);
                     case "15" -> sendMessage(reader);
                     case "16" -> replyMessage(reader);
+                    case "17" -> replyAll(reader);
                     default -> System.out.println("Invalid command!");
                 }
             }
@@ -279,6 +280,19 @@ public class ConsoleInterface {
         System.out.print("Type your message: ");
         String messageText = reader.readLine();
         srv.replyMessage(userFirstName,userLastName,messageID,messageText);
+        System.out.println("Reply sent successfully!");
+    }
+
+    private void replyAll(BufferedReader reader ) throws  IOException{
+        System.out.print("Give your first name: ");
+        String userFirstName = reader.readLine();
+        System.out.print("Give your last name: ");
+        String userLastName = reader.readLine();
+        System.out.print("Give message id: ");
+        Long messageID = Long.parseLong(reader.readLine());
+        System.out.print("Type your message: ");
+        String messageText = reader.readLine();
+        srv.replyAll(userFirstName,userLastName,messageID,messageText);
         System.out.println("Reply sent successfully!");
     }
 }

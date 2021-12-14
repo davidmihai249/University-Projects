@@ -108,7 +108,10 @@ public class MessageDbRepo implements Repository<Long, Message> {
                 String messageText = resultSet.getString("message");
                 LocalDateTime dateTime = resultSet.getTimestamp("date").toLocalDateTime();
                 List<User> toUsers = getToUsersList(messageID);
-                messages.add(new Message(getSenderUser(messageID),toUsers,messageText,dateTime,null));
+                Message message = new Message(getSenderUser(messageID),toUsers,messageText,dateTime,null);
+                message.setId(messageID);
+                messages.add(message);
+
             }
             return messages;
         } catch (SQLException e){
