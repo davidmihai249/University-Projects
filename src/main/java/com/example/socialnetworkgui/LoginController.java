@@ -58,7 +58,7 @@ public class LoginController implements Initializable {
                     Stage stage = new Stage();
                     stage.setScene(scene);
                     AccountController accountController = accountLoader.getController();
-                    accountController.setUserFriendshipService(service, searchedUser, stage);
+                    accountController.setUserFriendshipService(service, searchedUser, stage, root);
                     stage.show();
                 }
                 catch (IOException e){

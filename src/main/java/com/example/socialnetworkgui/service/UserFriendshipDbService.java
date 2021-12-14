@@ -141,7 +141,7 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
         Spliterator<FriendRequest> spliterator = allRequests.spliterator();
         StreamSupport.stream(spliterator, false)
                 .filter(x -> x.getId().getRight().equals(receiverId))
-                .forEach(f -> usersRequests.add(new FriendRequestDTO(userService.getUserRepo().findOne(f.getId().getLeft()), f.getStatus())));
+                .forEach(f -> usersRequests.add(new FriendRequestDTO(userService.getUserRepo().findOne(f.getId().getLeft()), f.getStatus(),f.getDate())));
         return usersRequests;
     }
 
@@ -202,6 +202,41 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
             }
         }
         catch (NullPointerException e){
+            throw new IllegalArgumentException("Message id is invalid!");
+        }
+    }
+
+
+    /**
+     * @param FirstNameFrom
+     * @param LastNameFrom
+     * @param messageID
+     * @param messageText
+     */
+    public void replyAll(String FirstNameFrom,String LastNameFrom, Long messageID,String messageText){
+        try{
+            Message message = messageRepo.findOne(messageID);
+            List<User> Users = new ArrayList<>();
+            Long senderID = userService.getUserID(FirstNameFrom,LastNameFrom);
+            User sender = userService.getUserRepo().findOne(senderID);
+            for(Message mess: messageRepo.findAll()){
+                if(mess.getId()==messageID){
+                    if(mess.getToUser().contains(sender)) {
+                        for (User user : mess.getToUser()) {
+                            if (!user.getFirstName().equals(FirstNameFrom) && !user.getLastName().equals(LastNameFrom)) {
+                                Users.add(user);
+                            }
+                        }
+                        Users.add(mess.getFromUser());
+                        Message reply = new Message(sender, Users, messageText, LocalDateTime.now(), message);
+                        messageRepo.save(reply);
+                    }
+                    else{
+                        throw new IllegalArgumentException("This user can't reply to that message!");
+                    }
+                }
+            }
+        } catch (NullPointerException e) {
             throw new IllegalArgumentException("Message id is invalid!");
         }
     }

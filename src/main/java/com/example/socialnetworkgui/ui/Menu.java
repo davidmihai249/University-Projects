@@ -18,6 +18,7 @@ public class Menu {
             "14. See the conversation between two users",
             "15. Send message.",
             "16. Reply to a message",
+            "17. Reply all.",
             "X. Close application"};
 
     public static void printMenu(){

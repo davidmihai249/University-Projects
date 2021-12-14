@@ -1,6 +1,7 @@
 package com.example.socialnetworkgui.repository.db;
 
 import com.example.socialnetworkgui.domain.FriendRequest;
+import com.example.socialnetworkgui.domain.FriendRequestDTO;
 import com.example.socialnetworkgui.domain.RequestStatus;
 import com.example.socialnetworkgui.domain.Tuple;
 import com.example.socialnetworkgui.domain.validators.RequestException;
@@ -9,6 +10,8 @@ import com.example.socialnetworkgui.domain.validators.Validator;
 import com.example.socialnetworkgui.repository.Repository;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -67,11 +70,12 @@ public class RequestDbRepo implements Repository<Tuple<Long>, FriendRequest> {
                 Long senderID = resultSet.getLong("sender_id");
                 Long receiverID = resultSet.getLong("receiver_id");
                 int integerStatus = resultSet.getInt("status");
+                LocalDate date = LocalDate.parse(resultSet.getDate("date").toString());
                 RequestStatus status = getRequestStatus(integerStatus);
                 if (status == null){
                     throw new ValidationException("Invalid friend request status!");
                 }
-                FriendRequest request = new FriendRequest(senderID,receiverID,status);
+                FriendRequest request = new FriendRequest(senderID,receiverID,status,date);
                 request.setId(new Tuple<>(senderID, receiverID));
                 requests.add(request);
             }
@@ -86,13 +90,14 @@ public class RequestDbRepo implements Repository<Tuple<Long>, FriendRequest> {
     @Override
     public FriendRequest save(FriendRequest request) {
         validator.validate(request);
-        String sql = "INSERT INTO requests (sender_id, receiver_id, status) VALUES (?,?,?)";
+        String sql = "INSERT INTO requests (sender_id, receiver_id, status,date) VALUES (?,?,?,?)";
         try (Connection connection = DriverManager.getConnection(url,username,password);
              PreparedStatement ps = connection.prepareStatement(sql))
         {
             ps.setLong(1, request.getId().getLeft());
             ps.setLong(2, request.getId().getRight());
             ps.setInt(3, getIntegerRequestStatus(request.getStatus()));
+            ps.setDate(4, Date.valueOf(LocalDate.now()));
             ps.executeUpdate();
             return null;
         }
