@@ -11,6 +11,7 @@ import com.example.socialnetworkgui.repository.db.MessageDbRepo;
 import com.example.socialnetworkgui.repository.db.RequestDbRepo;
 import com.example.socialnetworkgui.repository.db.UserDbRepo;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
+import com.example.socialnetworkgui.config.ApplicationContext;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -25,7 +26,7 @@ public class StartApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("login.fxml"));
+        loader.setLocation(getClass().getResource("views/login.fxml"));
         BorderPane root = loader.load();
         LoginController loginController = loader.getController();
         loginController.setUserFriendshipService(service);
@@ -36,28 +37,18 @@ public class StartApplication extends Application {
     }
 
     public static void main(String[] args) {
-        Repository<Long, User> userRepo = new UserDbRepo(
-                "jdbc:postgresql://localhost:5432/SocialNetwork",
-                "postgres",
-                "Pikamar77",
-                new UserValidator());
-        Repository<Tuple<Long>, Friendship> friendshipRepo = new FriendshipDbRepo(
-                "jdbc:postgresql://localhost:5432/SocialNetwork",
-                "postgres",
-                "Pikamar77",
-                new FriendshipValidator());
-        Repository<Tuple<Long>, FriendRequest> requestRepo = new RequestDbRepo(
-                "jdbc:postgresql://localhost:5432/SocialNetwork",
-                "postgres",
-                "Pikamar77",
-                new RequestValidator());
-        Repository<Long, Message> messageRepo = new MessageDbRepo(
-                "jdbc:postgresql://localhost:5432/SocialNetwork",
-                "postgres",
-                "Pikamar77",
-                new MessageValidator(),
-                userRepo
-        );
+        //String url = ApplicationContext.getPROPERTIES().getProperty("database.socialnetworkgui.url");
+        //String username = ApplicationContext.getPROPERTIES().getProperty("database.socialnetworkgui.username");
+        //String password = ApplicationContext.getPROPERTIES().getProperty("database.socialnetworkgui.password");
+
+        String url = "jdbc:postgresql://localhost:5432/SocialNetwork";
+        String username = "postgres";
+        String password = "Pikamar77";
+
+        Repository<Long, User> userRepo = new UserDbRepo(url, username, password, new UserValidator());
+        Repository<Tuple<Long>, Friendship> friendshipRepo = new FriendshipDbRepo(url, username, password, new FriendshipValidator());
+        Repository<Tuple<Long>, FriendRequest> requestRepo = new RequestDbRepo(url, username, password, new RequestValidator());
+        Repository<Long, Message> messageRepo = new MessageDbRepo(url, username, password, new MessageValidator(), userRepo);
         service = new UserFriendshipDbService(userRepo, friendshipRepo, requestRepo, messageRepo);
 
         launch();

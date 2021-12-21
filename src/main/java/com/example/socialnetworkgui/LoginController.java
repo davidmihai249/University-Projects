@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
@@ -52,13 +53,16 @@ public class LoginController implements Initializable {
                 clearFieldsAndLabel();
                 try{
                     FXMLLoader accountLoader = new FXMLLoader();
-                    accountLoader.setLocation(getClass().getResource("account.fxml"));
+                    accountLoader.setLocation(getClass().getResource("views/account.fxml"));
                     AnchorPane root = accountLoader.load();
                     Scene scene = new Scene(root);
+                    String css = Objects.requireNonNull(this.getClass().getResource("styles/style.css")).toExternalForm();
+                    scene.getStylesheets().add(css);
                     Stage stage = new Stage();
                     stage.setScene(scene);
                     AccountController accountController = accountLoader.getController();
                     accountController.setUserFriendshipService(service, searchedUser, stage, root);
+                    stage.setTitle("SocialNetwork");
                     stage.show();
                 }
                 catch (IOException e){

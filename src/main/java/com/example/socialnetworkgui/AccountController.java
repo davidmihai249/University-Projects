@@ -2,110 +2,127 @@ package com.example.socialnetworkgui;
 
 import com.example.socialnetworkgui.controller.EditFriendRequestController;
 import com.example.socialnetworkgui.controller.MessageAlert;
-import com.example.socialnetworkgui.domain.*;
+import com.example.socialnetworkgui.domain.FriendDTO;
+import com.example.socialnetworkgui.domain.FriendRequestDTO;
+import com.example.socialnetworkgui.domain.RequestStatus;
+import com.example.socialnetworkgui.domain.User;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
 import com.example.socialnetworkgui.utils.events.UserFriendChangeEvent;
 import com.example.socialnetworkgui.utils.observer.Observer;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.RowConstraints;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
 public class AccountController implements Observer<UserFriendChangeEvent> {
+
     User loggedUser;
     UserFriendshipDbService service;
-    ObservableList<FriendDTO> model = FXCollections.observableArrayList();
+    ObservableList<FriendDTO> modelFriend = FXCollections.observableArrayList();
     ObservableList<FriendRequestDTO> modelRequest = FXCollections.observableArrayList();
+    @FXML
     Stage accountStage;
-
-    @FXML
-    VBox layoutTableRequest;
-    @FXML
-    VBox layoutTableFriends;
     @FXML
     AnchorPane anchorPane;
+
     @FXML
-    TableView<FriendDTO> tableView;
+    TableView<FriendDTO> tableFriends;
     @FXML
-    TableColumn<FriendDTO, String> tableColumnFirstName;
+    TableColumn<FriendDTO, String> friendsFirstName;
     @FXML
-    TableColumn<FriendDTO, String> tableColumnLastName;
+    TableColumn<FriendDTO, String> friendsLastName;
     @FXML
-    TableColumn<FriendDTO, LocalDate> tableColumnSince;
+    TableColumn<FriendDTO, LocalDate> friendsSinceDate;
+    
     @FXML
-    TableView<FriendRequestDTO> tableViewRequest;
+    TableView<FriendRequestDTO> tableRequests;
     @FXML
-    TableColumn<FriendRequestDTO,String> firstnameRequest;
+    TableColumn<FriendRequestDTO,String> requestsFirstName;
     @FXML
-    TableColumn<FriendRequestDTO,String> lastnameRequest;
+    TableColumn<FriendRequestDTO,String> requestsLastName;
     @FXML
-    TableColumn<FriendRequestDTO,RequestStatus> statusRequest;
+    TableColumn<FriendRequestDTO,RequestStatus> requestsStatus;
     @FXML
-    TableColumn<FriendRequestDTO,String> dateRequest;
+    TableColumn<FriendRequestDTO,String> requestsDate;
+
+//    @FXML
+//    Button buttonAdd;
+//    @FXML
+//    Button buttonRemove;
     @FXML
-    Button buttonAdd;
+    Label labelLoggedUser;
     @FXML
-    Button buttonLogOut;
-    @FXML
-    Button buttonRemove;
+    Button buttonFriends;
     @FXML
     Button buttonRequests;
     @FXML
-    RowConstraints gridPaneTable;
+    Button buttonMessages;
+    @FXML
+    Button buttonLogOut;
+    @FXML
+    StackPane stackPane;
+    @FXML
+    Pane paneFriends;
+    @FXML
+    Pane paneRequests;
+    @FXML
+    Pane paneMessages;
 
-    public void setUserFriendshipService(UserFriendshipDbService userFriendshipDbService, User user, Stage stage,AnchorPane anchorPane){
+    public void setUserFriendshipService(UserFriendshipDbService userFriendshipDbService, User user, Stage stage,AnchorPane pane){
         loggedUser = user;
+        labelLoggedUser.setText(user.getFirstName() + " " + user.getLastName());
         service = userFriendshipDbService;
         service.addObserver(this);
         accountStage = stage;
-        this.anchorPane = anchorPane;
-        initModel();
+        anchorPane = pane;
+        initModelFriend();
         initModelRequest();
     }
 
     public void initialize(){
-        tableColumnFirstName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFriend().getFirstName()));
-        tableColumnLastName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFriend().getLastName()));
-        tableColumnSince.setCellValueFactory(new PropertyValueFactory<FriendDTO, LocalDate>("date"));
-        tableView.setItems(model);
-        firstnameRequest.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSender().getFirstName()));
-        lastnameRequest.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSender().getLastName()));
-        statusRequest.setCellValueFactory(new PropertyValueFactory<FriendRequestDTO, RequestStatus>("status"));
-        dateRequest.setCellValueFactory(cellData-> new SimpleStringProperty(cellData.getValue().getDate().toString()));
-        tableViewRequest.setItems(modelRequest);
+        // Set up the friends table
+        friendsFirstName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFriend().getFirstName()));
+        friendsLastName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFriend().getLastName()));
+        friendsSinceDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+        tableFriends.setItems(modelFriend);
+        // Set up the requests table
+        requestsFirstName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSender().getFirstName()));
+        requestsLastName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSender().getLastName()));
+        requestsStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        requestsDate.setCellValueFactory(cellData-> new SimpleStringProperty(cellData.getValue().getDate().toString()));
+        tableRequests.setItems(modelRequest);
+
+        buttonFriends.getStyleClass().add("button");
+        buttonRequests.getStyleClass().add("button");
+        buttonMessages.getStyleClass().add("button");
+        buttonLogOut.getStyleClass().add("button");
     }
 
     @Override
     public void update(UserFriendChangeEvent userFriendChangeEvent) {
-        initModel();
+        initModelFriend();
+        initModelRequest();
     }
 
-    private void initModel() {
+    private void initModelFriend() {
         Iterable<FriendDTO> friendDTOS = service.getAllFriendships(loggedUser.getFirstName(),loggedUser.getLastName());
         List<FriendDTO> friendDTOList = StreamSupport.stream(friendDTOS.spliterator(), false).toList();
-        model.setAll(friendDTOList);
+        modelFriend.setAll(friendDTOList);
     }
 
     private void initModelRequest() {
@@ -115,8 +132,8 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     @FXML
-    public void handleAddFriend(ActionEvent ev){
-        showFriendEditDialog();
+    public void handleFriendsButton(ActionEvent event){
+        paneFriends.toFront();
     }
 
     public void showFriendEditDialog() {
@@ -139,41 +156,35 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     @FXML
-    public void handleLogOut(ActionEvent ev){
-        accountStage.close();
+    public void handleAddFriend(ActionEvent ev){
+        showFriendEditDialog();
     }
 
     @FXML
     public void handleRemoveFriend(ActionEvent ev){
-        FriendDTO selectedFriendDTO = tableView.getSelectionModel().selectedItemProperty().getValue();
+        FriendDTO selectedFriendDTO = tableFriends.getSelectionModel().selectedItemProperty().getValue();
         if(selectedFriendDTO == null){
             MessageAlert.showErrorMessage(null, "No friend selected!");
         }
         else{
             service.removeFriend(loggedUser.getFirstName(), loggedUser.getLastName(), selectedFriendDTO.getFriend().getFirstName(), selectedFriendDTO.getFriend().getLastName());
-            initModel();
+            initModelFriend();
             MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Information", "Friend has been removed");
         }
     }
 
     @FXML
-    public void handleFriendsButton(ActionEvent event){
-        if(anchorPane.getChildren().get(1).getId()!=layoutTableRequest.getId()) {
-            swaptables();
-            initModel();
-        }
+    public void handleRequestsButton(ActionEvent event){
+        paneRequests.toFront();
     }
 
-    private void swaptables(){
-        ObservableList<Node> workingCollection = FXCollections.observableArrayList(anchorPane.getChildren());
-        Collections.swap(workingCollection, 1, 2);
-        anchorPane.getChildren().setAll(workingCollection);
-    }
     @FXML
-    public void handleRequestButton(ActionEvent event){
-        if(anchorPane.getChildren().get(1).getId()!=layoutTableFriends.getId()) {
-            swaptables();
-            initModelRequest();
-        }
+    public void handleMessagesButton(ActionEvent actionEvent) {
+        paneMessages.toFront();
+    }
+
+    @FXML
+    public void handleLogOut(ActionEvent ev){
+        accountStage.close();
     }
 }

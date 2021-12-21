@@ -3,7 +3,6 @@ package com.example.socialnetworkgui.service;
 import com.example.socialnetworkgui.domain.*;
 import com.example.socialnetworkgui.domain.validators.RequestException;
 import com.example.socialnetworkgui.repository.Repository;
-import com.example.socialnetworkgui.repository.db.UserDbRepo;
 import com.example.socialnetworkgui.utils.events.UserFriendChangeEvent;
 import com.example.socialnetworkgui.utils.observer.Observable;
 import com.example.socialnetworkgui.utils.observer.Observer;
@@ -16,7 +15,7 @@ import java.util.stream.StreamSupport;
 public class UserFriendshipDbService extends UserFriendshipService implements Observable<UserFriendChangeEvent> {
     private final Repository<Tuple<Long>, FriendRequest> requestRepo;
     private final Repository<Long, Message> messageRepo;
-    private List<Observer<UserFriendChangeEvent>> observers=new ArrayList<>();
+    private List<Observer<UserFriendChangeEvent>> observers = new ArrayList<>();
 
     public UserFriendshipDbService(Repository<Long, User> userRepo, Repository<Tuple<Long>, Friendship> friendshipRepo, Repository<Tuple<Long>, FriendRequest> requestRepository, Repository<Long, Message> messageRepository) {
         super(userRepo, friendshipRepo);
@@ -208,10 +207,12 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
 
 
     /**
-     * @param FirstNameFrom
-     * @param LastNameFrom
-     * @param messageID
-     * @param messageText
+     * Reply to all users
+     * @param FirstNameFrom String for the first name of the user who sends the message.
+     * @param LastNameFrom String for the last name of the user who sends the message.
+     * @param messageID The id of the message to be replied to.
+     * @param messageText String for the sent message.
+     * @throws IllegalArgumentException if the message id is invalid, or if the user can't reply to that message
      */
     public void replyAll(String FirstNameFrom,String LastNameFrom, Long messageID,String messageText){
         try{
@@ -220,7 +221,7 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
             Long senderID = userService.getUserID(FirstNameFrom,LastNameFrom);
             User sender = userService.getUserRepo().findOne(senderID);
             for(Message mess: messageRepo.findAll()){
-                if(mess.getId()==messageID){
+                if(mess.getId().equals(messageID)){
                     if(mess.getToUser().contains(sender)) {
                         for (User user : mess.getToUser()) {
                             if (!user.getFirstName().equals(FirstNameFrom) && !user.getLastName().equals(LastNameFrom)) {
@@ -253,6 +254,6 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
 
     @Override
     public void notifyObservers(UserFriendChangeEvent t) {
-        observers.stream().forEach(x -> x.update(t));
+        observers.forEach(x -> x.update(t));
     }
 }
