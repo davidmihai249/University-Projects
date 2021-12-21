@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="777.0" prefWidth="1033.0" stylesheets="@../styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.socialnetworkgui.AccountController">
+   <BorderPane prefHeight="777.0" prefWidth="1033.0">
+      <left>
+         <VBox prefHeight="677.0" prefWidth="200.0" style="-fx-background-color: #8b5cd6;" BorderPane.alignment="CENTER">
+            <Label fx:id="labelLoggedUser" alignment="CENTER" prefHeight="316.0" prefWidth="200.0" text="User" textFill="WHITE">
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="USER_CIRCLE" size="35" wrappingWidth="36.0" />
+               </graphic>
+            </Label>
+            <Button fx:id="buttonFriends" mnemonicParsing="false" onAction="#handleFriendsButton" prefHeight="90.0" prefWidth="330.0" styleClass="button" stylesheets="@../styles/style.css" text="Friends" textFill="WHITE">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="GROUP" />
+               </graphic>
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+            </Button>
+            <Button fx:id="buttonRequests" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleRequestsButton" prefHeight="90.0" prefWidth="330.0" styleClass="button" stylesheets="@../styles/style.css" text="Requests" textFill="WHITE">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="USER_PLUS" />
+               </graphic>
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+            </Button>
+            <Button fx:id="buttonMessages" layoutX="10.0" layoutY="100.0" mnemonicParsing="false" onAction="#handleMessagesButton" prefHeight="90.0" prefWidth="330.0" styleClass="button" stylesheets="@../styles/style.css" text="Messages" textFill="WHITE">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="COMMENTS" />
+               </graphic>
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+            </Button>
+            <Button fx:id="buttonLogOut" layoutX="10.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleLogOut" prefHeight="90.0" prefWidth="330.0" styleClass="button" stylesheets="@../styles/style.css" text="Log Out" textFill="WHITE">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="SIGN_OUT" />
+               </graphic>
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+            </Button>
+         </VBox>
+      </left>
+      <top>
+         <HBox fx:id="topHBox" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <Button fx:id="mainButton" mnemonicParsing="false" prefHeight="99.0" prefWidth="280.0" stylesheets="@../styles/style.css" text="SocialNetwork" textFill="WHITE">
+               <font>
+                  <Font name="SansSerif Regular" size="24.0" />
+               </font>
+            </Button>
+         </HBox>
+      </top>
+      <center>
+         <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <Pane fx:id="paneFriends" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
+               <TableView fx:id="tableFriends" layoutX="23.0" layoutY="197.0" prefHeight="470.0" prefWidth="792.0">
+                  <columns>
+                     <TableColumn fx:id="friendsFirstName" prefWidth="264.0" text="First Name" />
+                     <TableColumn fx:id="friendsLastName" prefWidth="264.0" text="Last Name" />
+                     <TableColumn fx:id="friendsSinceDate" prefWidth="264.0" text="Friends since" />
+                  </columns>
+               </TableView>
+            </Pane>
+            <Pane fx:id="paneRequests" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
+               <TableView fx:id="tableRequests" layoutX="23.0" layoutY="197.0" prefHeight="470.0" prefWidth="792.0">
+                  <columns>
+                     <TableColumn fx:id="requestsFirstName" prefWidth="198.0" text="First Name" />
+                     <TableColumn fx:id="requestsLastName" minWidth="0.0" prefWidth="198.0" text="Last Name" />
+                     <TableColumn fx:id="requestsStatus" minWidth="8.0" prefWidth="198.0" text="Status" />
+                     <TableColumn fx:id="requestsDate" prefWidth="198.0" text="Date" />
+                  </columns>
+               </TableView>
+            </Pane>
+            <Pane fx:id="paneMessages" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane" />
+         </StackPane>
+      </center>
+   </BorderPane>
+</AnchorPane>
