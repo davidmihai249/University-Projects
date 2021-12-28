@@ -7,6 +7,24 @@
     -fx-background-color: #6930C3;
 }
 
+#buttonApprove:hover {
+    -fx-background-color: #33cc33;
+    -fx-text-fill: black;
+}
+
+#buttonApprove {
+    -fx-text-fill: white;
+}
+
+#buttonReject:hover {
+    -fx-background-color: #ff3300;
+    -fx-text-fill: black;
+}
+
+#buttonReject {
+    -fx-text-fill: white;
+}
+
 #topHBox {
     -fx-background-color: linear-gradient(to bottom right, #7400B8, #5E60CE);
 }
@@ -36,7 +54,6 @@
 }
 
 .table-view .column-header-background{
-    /*-fx-background-color: linear-gradient(to bottom, #56CFE1, #80FFDB);*/
     -fx-background-color: linear-gradient(to bottom right, #7400B8, #5E60CE);
     -fx-background-radius: 7px 7px 0px 0px;
 }

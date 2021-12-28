@@ -71,6 +71,16 @@
       <center>
          <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <Pane fx:id="paneFriends" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
+               <HBox layoutX="27.0" layoutY="119.0" prefHeight="62.0" prefWidth="312.0">
+                  <Button fx:id="buttonAdd" mnemonicParsing="false" onAction="#handleAddFriend" prefHeight="62.0" prefWidth="156.0" text="Add" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font></Button>
+                  <Button fx:id="buttonRemove" mnemonicParsing="false" onAction="#handleRemoveFriend" prefHeight="62.0" prefWidth="156.0" text="Remove" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font></Button>
+               </HBox>
                <TableView fx:id="tableFriends" layoutX="23.0" layoutY="197.0" prefHeight="470.0" prefWidth="792.0">
                   <columns>
                      <TableColumn fx:id="friendsFirstName" prefWidth="264.0" text="First Name" />
@@ -80,14 +90,59 @@
                </TableView>
             </Pane>
             <Pane fx:id="paneRequests" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
-               <TableView fx:id="tableRequests" layoutX="23.0" layoutY="197.0" prefHeight="470.0" prefWidth="792.0">
-                  <columns>
-                     <TableColumn fx:id="requestsFirstName" prefWidth="198.0" text="First Name" />
-                     <TableColumn fx:id="requestsLastName" minWidth="0.0" prefWidth="198.0" text="Last Name" />
-                     <TableColumn fx:id="requestsStatus" minWidth="8.0" prefWidth="198.0" text="Status" />
-                     <TableColumn fx:id="requestsDate" prefWidth="198.0" text="Date" />
-                  </columns>
-               </TableView>
+               <HBox layoutX="503.0" layoutY="119.0" prefHeight="62.0" prefWidth="312.0">
+                  <Button fx:id="buttonSentReq" mnemonicParsing="false" onAction="#handleSentReqButton" prefHeight="62.0" prefWidth="156.0" text="Sent" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="buttonReceivedReq" mnemonicParsing="false" onAction="#handleReceivedReqButton" prefHeight="62.0" prefWidth="156.0" text="Received" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font>
+                  </Button>
+               </HBox>
+               <StackPane layoutY="188.0" prefHeight="487.0" prefWidth="832.0">
+                  <Pane fx:id="receivedPane">
+                     <HBox layoutX="23.0" layoutY="30.0" prefHeight="62.0" prefWidth="312.0">
+                        <Button fx:id="buttonApprove" mnemonicParsing="false" onAction="#handleApproveButton" prefHeight="62.0" prefWidth="156.0" stylesheets="@../styles/style.css" text="Approve">
+                           <font>
+                              <Font name="SansSerif Regular" size="14.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="buttonReject" mnemonicParsing="false" onAction="#handleRejectButton" prefHeight="62.0" prefWidth="156.0" text="Reject">
+                           <font>
+                              <Font name="SansSerif Regular" size="14.0" />
+                           </font>
+                        </Button>
+                     </HBox>
+                     <TableView fx:id="tableReceivedRequests" layoutX="23.0" layoutY="100.0" prefHeight="375.0" prefWidth="792.0">
+                        <columns>
+                           <TableColumn fx:id="receivedRequestsFirstName" prefWidth="198.0" text="First Name" />
+                           <TableColumn fx:id="receivedRequestsLastName" minWidth="0.0" prefWidth="198.0" text="Last Name" />
+                           <TableColumn fx:id="receivedRequestsStatus" minWidth="8.0" prefWidth="198.0" text="Status" />
+                           <TableColumn fx:id="receivedRequestsDate" prefWidth="198.0" text="Date" />
+                        </columns>
+                     </TableView>
+                  </Pane>
+                  <Pane fx:id="sentPane">
+                     <HBox layoutX="23.0" layoutY="30.0" prefHeight="62.0" prefWidth="156.0">
+                        <Button fx:id="buttonUnsend" onAction="#handleUnsendButton" mnemonicParsing="false" prefHeight="62.0" prefWidth="156.0" text="Unsend" textFill="WHITE">
+                           <font>
+                              <Font name="SansSerif Regular" size="14.0" />
+                           </font>
+                        </Button>
+                     </HBox>
+                     <TableView fx:id="tableSentRequests" layoutX="23.0" layoutY="100.0" prefHeight="375.0" prefWidth="792.0">
+                        <columns>
+                           <TableColumn fx:id="sentRequestsFirstName" prefWidth="198.0" text="First Name" />
+                           <TableColumn fx:id="sentRequestsLastName" minWidth="0.0" prefWidth="198.0" text="Last Name" />
+                           <TableColumn fx:id="sentRequestsStatus" minWidth="8.0" prefWidth="198.0" text="Status" />
+                           <TableColumn fx:id="sentRequestsDate" prefWidth="198.0" text="Date" />
+                        </columns>
+                     </TableView>
+                  </Pane>
+               </StackPane>
             </Pane>
             <Pane fx:id="paneMessages" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane" />
          </StackPane>
