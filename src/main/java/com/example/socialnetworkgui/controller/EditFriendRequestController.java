@@ -28,7 +28,6 @@ public class EditFriendRequestController {
         this.service = service;
         this.dialogStage = stage;
         this.loggedUser = loggedUser;
-
     }
 
     @FXML
@@ -37,6 +36,7 @@ public class EditFriendRequestController {
         String lastName = textFieldLastName.getText();
         User friend = new User(firstName,lastName);
         saveFriendRequest(loggedUser, friend);
+        service.notifyObservers(null);
     }
 
     private void saveFriendRequest(User loggedUser, User friend) {

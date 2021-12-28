@@ -85,6 +85,30 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
     }
 
     /**
+     * Remove a friend request
+     * @param senderFirstName First name of the user who sent the friend request
+     * @param senderLastName Last name of the user who sent the friend request
+     * @param receiverFirstName First name of the user who received the friend request
+     * @param receiverLastName Last name of the user who received the friend request
+     * @throws IllegalArgumentException if the name of at least one user is invalid
+     * @throws RequestException if the users exist but there is no request from sender to receiver
+     */
+    public void removeFriendRequest(String senderFirstName, String senderLastName, String receiverFirstName, String receiverLastName) {
+        Long senderID = userService.getUserID(senderFirstName,senderLastName);
+        if(senderID == null){
+            throw new IllegalArgumentException("\nInvalid sender name!");
+        }
+        Long receiverID = userService.getUserID(receiverFirstName,receiverLastName);
+        if(receiverID == null){
+            throw new IllegalArgumentException("\nInvalid receiver name");
+        }
+        FriendRequest deletedRequest = requestRepo.delete(new Tuple<>(senderID, receiverID));
+        if(deletedRequest == null) {
+            throw new RequestException("The request does not exist!");
+        }
+    }
+
+    /**
      * Answer a friend request by changing its status
      * @param senderFirstName First name of the user who sent the friend request
      * @param senderLastName Last name of the user who sent the friend request
@@ -141,6 +165,27 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
         StreamSupport.stream(spliterator, false)
                 .filter(x -> x.getId().getRight().equals(receiverId))
                 .forEach(f -> usersRequests.add(new FriendRequestDTO(userService.getUserRepo().findOne(f.getId().getLeft()), f.getStatus(),f.getDate())));
+        return usersRequests;
+    }
+
+    /**
+     * Get all friend requests sent by a user
+     * @param senderFirstName First name of the user who sent the friend requests
+     * @param senderLastName Last name of the user who sent the friend requests
+     * @return a list with FriendRequestDTO objects
+     * @throws IllegalArgumentException if the name of the user is invalid
+     */
+    public List<FriendRequestDTO> getUsersSentRequests(String senderFirstName, String senderLastName){
+        Long senderID = userService.getUserID(senderFirstName,senderLastName);
+        if(senderID == null){
+            throw new IllegalArgumentException("Sender name is invalid!");
+        }
+        List<FriendRequestDTO> usersRequests = new ArrayList<>();
+        Iterable<FriendRequest> allRequests = requestRepo.findAll();
+        Spliterator<FriendRequest> spliterator = allRequests.spliterator();
+        StreamSupport.stream(spliterator, false)
+                .filter(x -> x.getId().getLeft().equals(senderID))
+                .forEach(f -> usersRequests.add(new FriendRequestDTO(userService.getUserRepo().findOne(f.getId().getRight()), f.getStatus(),f.getDate())));
         return usersRequests;
     }
 
