@@ -15,12 +15,14 @@ import java.util.stream.StreamSupport;
 public class UserFriendshipDbService extends UserFriendshipService implements Observable<UserFriendChangeEvent> {
     private final Repository<Tuple<Long>, FriendRequest> requestRepo;
     private final Repository<Long, Message> messageRepo;
+    private final Repository<Long, Chat> chatRepo;
     private List<Observer<UserFriendChangeEvent>> observers = new ArrayList<>();
 
-    public UserFriendshipDbService(Repository<Long, User> userRepo, Repository<Tuple<Long>, Friendship> friendshipRepo, Repository<Tuple<Long>, FriendRequest> requestRepository, Repository<Long, Message> messageRepository) {
+    public UserFriendshipDbService(Repository<Long, User> userRepo, Repository<Tuple<Long>, Friendship> friendshipRepo, Repository<Tuple<Long>, FriendRequest> requestRepository, Repository<Long, Message> messageRepository, Repository<Long, Chat> chatRepo){
         super(userRepo, friendshipRepo);
         requestRepo = requestRepository;
         messageRepo = messageRepository;
+        this.chatRepo = chatRepo;
     }
 
     public Repository<Long, User> getUserRepo(){
@@ -214,11 +216,33 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
      * @param toUsersNames List of tuple containing the first and last name of the users who receive the message.
      * @param messageText String for the sent message.
      */
-    public void sendMessage(String FirstNameFrom,String LastNameFrom,List<Tuple<String>> toUsersNames,String messageText){
+
+    public void sendMessage(String FirstNameFrom,String LastNameFrom,List<Tuple<String>> toUsersNames,String messageText,Message Reply){
         List<User> toUsers = new ArrayList<>();
         toUsersNames.forEach(t -> toUsers.add(userService.getUser(t.getLeft(),t.getRight())));
-        Message message = new Message(userService.getUser(FirstNameFrom,LastNameFrom),toUsers,messageText,LocalDateTime.now(),null);
+        Message message = new Message(userService.getUser(FirstNameFrom,LastNameFrom),toUsers,messageText,LocalDateTime.now(),Reply);
         messageRepo.save(message);
+    }
+
+    public List<Message> getGroupMessages(List<Long> ids){
+        Iterable<Message> allMessages = messageRepo.findAll();
+        Spliterator<Message> spliterator = allMessages.spliterator();
+        return StreamSupport.stream(spliterator, false)
+                .filter(m->(ids.contains(m.getFromUser().getId())))
+                .filter(m->m.getToUser().size()==ids.size()-1)
+                .filter(m->m.getToUser().stream().allMatch(x->ids.contains(x.getId())))
+                .sorted(Comparator.comparing(Message::getDate))
+                .toList();
+    }
+
+    public List<Chat> getAllChats(){
+        Iterable<Chat> allChats = chatRepo.findAll();
+        Spliterator<Chat> spliterator = allChats.spliterator();
+        return StreamSupport.stream(spliterator,false).toList();
+    }
+
+    public void addChat(Chat newChat){
+        chatRepo.save(newChat);
     }
 
     /**

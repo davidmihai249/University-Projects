@@ -13,6 +13,8 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
 <AnchorPane prefHeight="777.0" prefWidth="1033.0" stylesheets="@../styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.socialnetworkgui.AccountController">
    <BorderPane prefHeight="777.0" prefWidth="1033.0">
       <left>
@@ -144,7 +146,18 @@
                   </Pane>
                </StackPane>
             </Pane>
-            <Pane fx:id="paneMessages" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane" />
+            <Pane fx:id="paneMessages" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
+               <children>
+                  <TableView fx:id="tableChatFriends" layoutX="14.0" layoutY="10.0" onMouseClicked="#setListChat" prefHeight="586.0" prefWidth="215.0">
+                     <columns>
+                        <TableColumn fx:id="chatColumn" prefWidth="220.0" text="Chats" />
+                     </columns>
+                  </TableView>
+                  <ListView fx:id="listViewConversation" layoutX="246.0" layoutY="14.0" prefHeight="583.0" prefWidth="577.0" />
+                  <TextField fx:id="textFieldMessage" layoutX="246.0" layoutY="611.0" prefHeight="22.0" prefWidth="499.0" promptText="Type you message here" />
+                  <Button fx:id="buttonSendMessage" layoutX="754.0" layoutY="611.0" mnemonicParsing="false" onMouseClicked="#sendMessage" text="Send" textFill="WHITE" />
+                  <Button layoutX="36.0" layoutY="611.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="192.0" text="Add New Chat" textFill="WHITE" />
+               </children></Pane>
          </StackPane>
       </center>
    </BorderPane>

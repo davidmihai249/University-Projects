@@ -2,24 +2,25 @@ package com.example.socialnetworkgui;
 
 import com.example.socialnetworkgui.controller.EditFriendRequestController;
 import com.example.socialnetworkgui.controller.MessageAlert;
-import com.example.socialnetworkgui.domain.FriendDTO;
-import com.example.socialnetworkgui.domain.FriendRequestDTO;
-import com.example.socialnetworkgui.domain.RequestStatus;
-import com.example.socialnetworkgui.domain.User;
+import com.example.socialnetworkgui.domain.*;
 import com.example.socialnetworkgui.domain.validators.RequestException;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
 import com.example.socialnetworkgui.utils.events.UserFriendChangeEvent;
 import com.example.socialnetworkgui.utils.observer.Observer;
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
@@ -27,6 +28,8 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
@@ -110,6 +113,22 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     Pane paneMessages;
 
+    //Chat
+    @FXML
+    private TableView<Chat> tableChatFriends;
+    @FXML
+    private TableColumn<Chat,String> chatColumn;
+    @FXML
+    private ListView<Message> listViewConversation;
+    @FXML
+    private TextField textFieldMessage;
+    @FXML
+    private ObservableList<Message> model = FXCollections.observableArrayList();
+    @FXML
+    private ObservableList<Chat> modelChat = FXCollections.observableArrayList();
+    @FXML
+    Chat selectedChat;
+
     public void setUserFriendshipService(UserFriendshipDbService userFriendshipDbService, User user, Stage stage,AnchorPane pane){
         loggedUser = user;
         labelLoggedUser.setText(user.getFirstName() + " " + user.getLastName());
@@ -138,16 +157,52 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         sentRequestsStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         sentRequestsDate.setCellValueFactory(cellData-> new SimpleStringProperty(cellData.getValue().getDate().toString()));
         tableSentRequests.setItems(modelSentRequest);
+        chatColumn.setCellValueFactory(features ->{
+            String chatname = features.getValue().getChatName();
+            SimpleStringProperty chatName = new SimpleStringProperty(chatname);
+            if(features.getValue().getUsers().size()==2){
+                if(service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getFirstName().equals(loggedUser.getFirstName()) && service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getLastName().equals(loggedUser.getLastName())){
+                    return Bindings.when(chatName.isEmpty())
+                            .then(service.getUserRepo().findOne(features.getValue().getUsers().get(1)).getFirstName() + " " + service.getUserRepo().findOne(features.getValue().getUsers().get(1)).getLastName())
+                            .otherwise(chatname);
+                }
+                else
+                {
+                    return Bindings.when(chatName.isEmpty())
+                            .then(service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getFirstName() + " " + service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getLastName())
+                            .otherwise(chatname);
+                }
+            }
+            return Bindings.when(chatName.isEmpty())
+                    .then(service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getFirstName() + " " + service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getLastName())
+                    .otherwise(chatname);
 
+        });
+        tableChatFriends.setItems(modelChat);
+        listViewConversation.setItems(model);
         sentPane.setVisible(false);
         receivedPane.setVisible(false);
     }
 
     @Override
     public void update(UserFriendChangeEvent userFriendChangeEvent) {
+        initModel();
         initModelFriend();
         initModelRequest();
         initModelSentRequest();
+        initModelChat();
+    }
+
+    private void initModelChat(){
+        Iterable<Chat> chats = service.getAllChats();
+        List<Chat> chatsList = StreamSupport.stream(chats.spliterator(),false).toList();
+        List<Chat> finalChats = new ArrayList<>();
+        for(Chat chat:chatsList){
+            if(chat.getUsers().contains(loggedUser.getId())){
+                finalChats.add(chat);
+            }
+        }
+        modelChat.setAll(finalChats);
     }
 
     private void initModelFriend() {
@@ -166,6 +221,124 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         Iterable<FriendRequestDTO> requests = service.getUsersSentRequests(loggedUser.getFirstName(),loggedUser.getLastName());
         List<FriendRequestDTO> friendDTOList = StreamSupport.stream(requests.spliterator(), false).toList();
         modelSentRequest.setAll(friendDTOList);
+    }
+
+    @FXML
+    public void setListChat(){
+        this.selectedChat = tableChatFriends.getSelectionModel().selectedItemProperty().getValue();
+        listViewConversation.getItems().clear();
+        initModel();
+    }
+
+    private void initModel() {
+        selectedChat = tableChatFriends.getSelectionModel().selectedItemProperty().getValue();
+        if(selectedChat != null) {
+            /*if (selectedChat.getUsers().size() == 2) {
+                if (service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getFirstName().equals(loggedUser.getFirstName()) && service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getLastName().equals(loggedUser.getLastName())) {
+                    service.getFullConversation(new Tuple<>(loggedUser.getFirstName(), loggedUser.getLastName()), new Tuple<>(service.getUserRepo().findOne(selectedChat.getUsers().get(1)).getFirstName(), service.getUserRepo().findOne(selectedChat.getUsers().get(1)).getLastName())).forEach(message -> {
+                        model.add(message);
+                    });
+                } else {
+                    service.getFullConversation(new Tuple<>(loggedUser.getFirstName(), loggedUser.getLastName()), new Tuple<>(service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getFirstName(), service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getLastName())).forEach(message -> {
+                        model.add(message);
+                    });
+                }
+            }
+            else{*/
+            List<Long> ids = new ArrayList<>();
+            for(Long id:selectedChat.getUsers()){
+                ids.add(id);
+            }
+            service.getGroupMessages(ids).forEach(message -> {
+                model.add(message);
+            });
+            // }
+
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+
+                    listViewConversation.setItems(model);
+                    listViewConversation.setCellFactory(param -> {
+                        ListCell<Message> cell = new ListCell<Message>() {
+                            Label lblUserLeft = new Label();
+                            Label lblTextLeft = new Label();
+                            HBox hBoxLeft = new HBox(lblUserLeft, lblTextLeft);
+
+                            Label lblUserRight = new Label();
+                            Label lblTextRight = new Label();
+                            HBox hBoxRight = new HBox(lblTextRight, lblUserRight);
+
+                            {
+                                hBoxLeft.setAlignment(Pos.CENTER_LEFT);
+                                hBoxLeft.setSpacing(5);
+                                hBoxRight.setAlignment(Pos.CENTER_RIGHT);
+                                hBoxRight.setSpacing(5);
+                            }
+
+                            @Override
+                            protected void updateItem(Message item, boolean empty) {
+                                super.updateItem(item, empty);
+
+                                if (empty) {
+                                    setText(null);
+                                    setGraphic(null);
+                                } else {
+                                    if (item.getFromUser().getFirstName().equals(loggedUser.getFirstName()) && item.getFromUser().getLastName().equals(loggedUser.getLastName())) {
+
+                                        lblUserRight.setText(":" + item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName());
+                                        lblTextRight.setText(item.getMessage());
+                                        setGraphic(hBoxRight);
+                                    } else {
+                                        lblUserLeft.setText(item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName() + ":");
+                                        lblTextLeft.setText(item.getMessage());
+                                        setGraphic(hBoxLeft);
+                                    }
+                                }
+                            }
+
+                        };
+                        return cell;
+                    });
+                }
+            });
+        }
+    }
+
+
+    public void sendMessage() {
+        String messageText = textFieldMessage.getText();
+        List<Tuple<String>> toUsers = new ArrayList<>();
+        if(selectedChat.getUsers().size() == 2){
+            if(service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getFirstName().equals(loggedUser.getFirstName()) && service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getLastName().equals(loggedUser.getLastName())){
+                toUsers.add(new Tuple<>(service.getUserRepo().findOne(selectedChat.getUsers().get(1)).getFirstName(),service.getUserRepo().findOne(selectedChat.getUsers().get(1)).getLastName()));
+                service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, model.get(model.size()-1));
+                textFieldMessage.clear();
+                List<User> toUser = new ArrayList<>();
+                toUser.add(service.getUserRepo().findOne(selectedChat.getUsers().get(1)));
+                model.add(new Message(loggedUser,toUser,messageText, LocalDateTime.now(),model.get(model.size()-1)));
+            }
+            else{
+                toUsers.add(new Tuple<>(service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getFirstName(),service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getLastName()));
+                service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, model.get(model.size()-1));
+                textFieldMessage.clear();
+                List<User> toUser = new ArrayList<>();
+                toUser.add(service.getUserRepo().findOne(selectedChat.getUsers().get(0)));
+                model.add(new Message(loggedUser,toUser,messageText, LocalDateTime.now(),model.get(model.size()-1)));
+            }
+        }
+        else{
+            List<User> toUser = new ArrayList<>();
+            for(Long id:selectedChat.getUsers()){
+                if(loggedUser.getId()!=id) {
+                    toUsers.add(new Tuple<>(service.getUserRepo().findOne(id).getFirstName(), service.getUserRepo().findOne(id).getLastName()));
+                    toUser.add(service.getUserRepo().findOne(id));
+                }
+            }
+            service.sendMessage(loggedUser.getFirstName(),loggedUser.getLastName(),toUsers,messageText,null);
+            textFieldMessage.clear();
+            model.add(new Message(loggedUser,toUser,messageText,LocalDateTime.now(),null));
+        }
     }
 
     @FXML

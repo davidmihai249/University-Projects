@@ -6,10 +6,7 @@ import com.example.socialnetworkgui.domain.validators.MessageValidator;
 import com.example.socialnetworkgui.domain.validators.RequestValidator;
 import com.example.socialnetworkgui.domain.validators.UserValidator;
 import com.example.socialnetworkgui.repository.Repository;
-import com.example.socialnetworkgui.repository.db.FriendshipDbRepo;
-import com.example.socialnetworkgui.repository.db.MessageDbRepo;
-import com.example.socialnetworkgui.repository.db.RequestDbRepo;
-import com.example.socialnetworkgui.repository.db.UserDbRepo;
+import com.example.socialnetworkgui.repository.db.*;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
 import com.example.socialnetworkgui.ui.ConsoleInterface;
 
@@ -44,8 +41,13 @@ public class Main {
                 new MessageValidator(),
                 userRepo
         );
+        Repository<Long,Chat> chatRepository = new ChatDBRepo(
+                "jdbc:postgresql://localhost:5432/SocialNetwork",
+                "postgres",
+                "834617"
+        );
 
-        UserFriendshipDbService srv = new UserFriendshipDbService(userRepo, friendshipRepo, requestRepo, messageRepo);
+        UserFriendshipDbService srv = new UserFriendshipDbService(userRepo, friendshipRepo, requestRepo, messageRepo,chatRepository);
 
         ConsoleInterface ui = new ConsoleInterface(srv);
         ui.run();

@@ -266,7 +266,7 @@ public class ConsoleInterface {
         }
         System.out.print("Type your message: ");
         String message = reader.readLine();
-        srv.sendMessage(user1FirstName,user1LastName,toUsers,message);
+        //srv.sendMessage(user1FirstName,user1LastName,toUsers,message);
         System.out.println("Message sent successfully!");
     }
 
