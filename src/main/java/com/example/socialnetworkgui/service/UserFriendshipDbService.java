@@ -216,7 +216,6 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
      * @param toUsersNames List of tuple containing the first and last name of the users who receive the message.
      * @param messageText String for the sent message.
      */
-
     public void sendMessage(String FirstNameFrom,String LastNameFrom,List<Tuple<String>> toUsersNames,String messageText,Message Reply){
         List<User> toUsers = new ArrayList<>();
         toUsersNames.forEach(t -> toUsers.add(userService.getUser(t.getLeft(),t.getRight())));

@@ -189,7 +189,6 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     public void update(UserFriendChangeEvent userFriendChangeEvent) {
         switch (userFriendChangeEvent.getType()) {
             case MESSAGE: {
-                initModelChatsList();
                 initModelChat();
             }
             case FRIEND_REQUEST: {
@@ -258,7 +257,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 public void run() {
 
                     listViewConversation.setItems(modelMessages);
-                    listViewConversation.setCellFactory(param -> new ListCell<Message>() {
+                    listViewConversation.setCellFactory(param -> new ListCell<>() {
                         Label lblUserLeft = new Label();
                         Label lblTextLeft = new Label();
                         HBox hBoxLeft = new HBox(lblUserLeft, lblTextLeft);
@@ -305,29 +304,28 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         String messageText = textFieldMessage.getText();
         List<Tuple<String>> toUsers = new ArrayList<>();
         if(selectedChat.getUsers().size() == 2){
-            if(service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getFirstName().equals(loggedUser.getFirstName()) && service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getLastName().equals(loggedUser.getLastName())){
-                toUsers.add(new Tuple<>(service.getUserRepo().findOne(selectedChat.getUsers().get(1)).getFirstName(),service.getUserRepo().findOne(selectedChat.getUsers().get(1)).getLastName()));
-                service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, null);
-                textFieldMessage.clear();
-                List<User> toUser = new ArrayList<>();
-                toUser.add(service.getUserRepo().findOne(selectedChat.getUsers().get(1)));
-                modelMessages.add(new Message(loggedUser,toUser,messageText, LocalDateTime.now(),null));
+            User firstUser = service.getUserRepo().findOne(selectedChat.getUsers().get(0));
+            User secondUser = service.getUserRepo().findOne(selectedChat.getUsers().get(1));
+            List<User> toUser = new ArrayList<>();
+            textFieldMessage.clear();
+            if(firstUser.getFirstName().equals(loggedUser.getFirstName()) && firstUser.getLastName().equals(loggedUser.getLastName())){
+                toUsers.add(new Tuple<>(secondUser.getFirstName(),secondUser.getLastName()));
+                toUser.add(secondUser);
             }
             else{
-                toUsers.add(new Tuple<>(service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getFirstName(),service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getLastName()));
-                service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, null);
-                textFieldMessage.clear();
-                List<User> toUser = new ArrayList<>();
-                toUser.add(service.getUserRepo().findOne(selectedChat.getUsers().get(0)));
-                modelMessages.add(new Message(loggedUser,toUser,messageText, LocalDateTime.now(),null));
+                toUsers.add(new Tuple<>(firstUser.getFirstName(),firstUser.getLastName()));
+                toUser.add(firstUser);
             }
+            service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, null);
+            modelMessages.add(new Message(loggedUser,toUser,messageText, LocalDateTime.now(),null));
         }
         else{
             List<User> toUser = new ArrayList<>();
             for(Long id:selectedChat.getUsers()){
                 if(!Objects.equals(loggedUser.getId(), id)) {
-                    toUsers.add(new Tuple<>(service.getUserRepo().findOne(id).getFirstName(), service.getUserRepo().findOne(id).getLastName()));
-                    toUser.add(service.getUserRepo().findOne(id));
+                    User user = service.getUserRepo().findOne(id);
+                    toUsers.add(new Tuple<>(user.getFirstName(), user.getLastName()));
+                    toUser.add(user);
                 }
             }
             service.sendMessage(loggedUser.getFirstName(),loggedUser.getLastName(),toUsers,messageText,null);
