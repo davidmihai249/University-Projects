@@ -5,6 +5,7 @@ import com.example.socialnetworkgui.controller.MessageAlert;
 import com.example.socialnetworkgui.domain.*;
 import com.example.socialnetworkgui.domain.validators.RequestException;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
+import com.example.socialnetworkgui.utils.events.ChangeEventType;
 import com.example.socialnetworkgui.utils.events.UserFriendChangeEvent;
 import com.example.socialnetworkgui.utils.observer.Observer;
 import javafx.application.Platform;
@@ -12,7 +13,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.StreamSupport;
 
 public class AccountController implements Observer<UserFriendChangeEvent> {
@@ -123,7 +124,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     private TextField textFieldMessage;
     @FXML
-    private ObservableList<Message> model = FXCollections.observableArrayList();
+    private ObservableList<Message> modelMessages = FXCollections.observableArrayList();
     @FXML
     private ObservableList<Chat> modelChat = FXCollections.observableArrayList();
     @FXML
@@ -134,7 +135,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         labelLoggedUser.setText(user.getFirstName() + " " + user.getLastName());
         service = userFriendshipDbService;
         service.addObserver(this);
-        service.notifyObservers(null);
+        service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.ALL,null));
         accountStage = stage;
         anchorPane = pane;
     }
@@ -158,42 +159,58 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         sentRequestsDate.setCellValueFactory(cellData-> new SimpleStringProperty(cellData.getValue().getDate().toString()));
         tableSentRequests.setItems(modelSentRequest);
         chatColumn.setCellValueFactory(features ->{
-            String chatname = features.getValue().getChatName();
-            SimpleStringProperty chatName = new SimpleStringProperty(chatname);
+            String chatNameString = features.getValue().getChatName();
+            SimpleStringProperty chatName = new SimpleStringProperty(chatNameString);
             if(features.getValue().getUsers().size()==2){
                 if(service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getFirstName().equals(loggedUser.getFirstName()) && service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getLastName().equals(loggedUser.getLastName())){
                     return Bindings.when(chatName.isEmpty())
                             .then(service.getUserRepo().findOne(features.getValue().getUsers().get(1)).getFirstName() + " " + service.getUserRepo().findOne(features.getValue().getUsers().get(1)).getLastName())
-                            .otherwise(chatname);
+                            .otherwise(chatNameString);
                 }
                 else
                 {
                     return Bindings.when(chatName.isEmpty())
                             .then(service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getFirstName() + " " + service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getLastName())
-                            .otherwise(chatname);
+                            .otherwise(chatNameString);
                 }
             }
             return Bindings.when(chatName.isEmpty())
                     .then(service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getFirstName() + " " + service.getUserRepo().findOne(features.getValue().getUsers().get(0)).getLastName())
-                    .otherwise(chatname);
+                    .otherwise(chatNameString);
 
         });
         tableChatFriends.setItems(modelChat);
-        listViewConversation.setItems(model);
+        listViewConversation.setItems(modelMessages);
         sentPane.setVisible(false);
         receivedPane.setVisible(false);
     }
 
     @Override
     public void update(UserFriendChangeEvent userFriendChangeEvent) {
-        initModel();
-        initModelFriend();
-        initModelRequest();
-        initModelSentRequest();
-        initModelChat();
+        switch (userFriendChangeEvent.getType()) {
+            case MESSAGE: {
+                initModelChatsList();
+                initModelChat();
+            }
+            case FRIEND_REQUEST: {
+                initModelFriend();
+                initModelRequest();
+            }
+            case REQUEST: {
+                initModelSentRequest();
+                initModelRequest();
+            }
+            case ALL: {
+                initModelChatsList();
+                initModelChat();
+                initModelFriend();
+                initModelRequest();
+                initModelSentRequest();
+            }
+        }
     }
 
-    private void initModelChat(){
+    private void initModelChatsList(){
         Iterable<Chat> chats = service.getAllChats();
         List<Chat> chatsList = StreamSupport.stream(chats.spliterator(),false).toList();
         List<Chat> finalChats = new ArrayList<>();
@@ -226,85 +243,63 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     public void setListChat(){
         this.selectedChat = tableChatFriends.getSelectionModel().selectedItemProperty().getValue();
-        listViewConversation.getItems().clear();
-        initModel();
+        initModelChat();
     }
 
-    private void initModel() {
+    private void initModelChat() {
+        listViewConversation.getItems().clear();
         selectedChat = tableChatFriends.getSelectionModel().selectedItemProperty().getValue();
         if(selectedChat != null) {
-            /*if (selectedChat.getUsers().size() == 2) {
-                if (service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getFirstName().equals(loggedUser.getFirstName()) && service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getLastName().equals(loggedUser.getLastName())) {
-                    service.getFullConversation(new Tuple<>(loggedUser.getFirstName(), loggedUser.getLastName()), new Tuple<>(service.getUserRepo().findOne(selectedChat.getUsers().get(1)).getFirstName(), service.getUserRepo().findOne(selectedChat.getUsers().get(1)).getLastName())).forEach(message -> {
-                        model.add(message);
-                    });
-                } else {
-                    service.getFullConversation(new Tuple<>(loggedUser.getFirstName(), loggedUser.getLastName()), new Tuple<>(service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getFirstName(), service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getLastName())).forEach(message -> {
-                        model.add(message);
-                    });
-                }
-            }
-            else{*/
-            List<Long> ids = new ArrayList<>();
-            for(Long id:selectedChat.getUsers()){
-                ids.add(id);
-            }
-            service.getGroupMessages(ids).forEach(message -> {
-                model.add(message);
-            });
-            // }
+            List<Long> ids = new ArrayList<>(selectedChat.getUsers());
+            modelMessages.addAll(service.getGroupMessages(ids));
 
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
 
-                    listViewConversation.setItems(model);
-                    listViewConversation.setCellFactory(param -> {
-                        ListCell<Message> cell = new ListCell<Message>() {
-                            Label lblUserLeft = new Label();
-                            Label lblTextLeft = new Label();
-                            HBox hBoxLeft = new HBox(lblUserLeft, lblTextLeft);
+                    listViewConversation.setItems(modelMessages);
+                    listViewConversation.setCellFactory(param -> new ListCell<Message>() {
+                        Label lblUserLeft = new Label();
+                        Label lblTextLeft = new Label();
+                        HBox hBoxLeft = new HBox(lblUserLeft, lblTextLeft);
 
-                            Label lblUserRight = new Label();
-                            Label lblTextRight = new Label();
-                            HBox hBoxRight = new HBox(lblTextRight, lblUserRight);
+                        Label lblUserRight = new Label();
+                        Label lblTextRight = new Label();
+                        HBox hBoxRight = new HBox(lblTextRight, lblUserRight);
 
-                            {
-                                hBoxLeft.setAlignment(Pos.CENTER_LEFT);
-                                hBoxLeft.setSpacing(5);
-                                hBoxRight.setAlignment(Pos.CENTER_RIGHT);
-                                hBoxRight.setSpacing(5);
-                            }
+                        {
+                            hBoxLeft.setAlignment(Pos.CENTER_LEFT);
+                            hBoxLeft.setSpacing(5);
+                            hBoxRight.setAlignment(Pos.CENTER_RIGHT);
+                            hBoxRight.setSpacing(5);
+                        }
 
-                            @Override
-                            protected void updateItem(Message item, boolean empty) {
-                                super.updateItem(item, empty);
+                        @Override
+                        protected void updateItem(Message item, boolean empty) {
+                            super.updateItem(item, empty);
 
-                                if (empty) {
-                                    setText(null);
-                                    setGraphic(null);
+                            if (empty) {
+                                setText(null);
+                                setGraphic(null);
+                            } else {
+                                if (item.getFromUser().getFirstName().equals(loggedUser.getFirstName()) && item.getFromUser().getLastName().equals(loggedUser.getLastName())) {
+
+                                    lblUserRight.setText(":" + item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName());
+                                    lblTextRight.setText(item.getMessage());
+                                    setGraphic(hBoxRight);
                                 } else {
-                                    if (item.getFromUser().getFirstName().equals(loggedUser.getFirstName()) && item.getFromUser().getLastName().equals(loggedUser.getLastName())) {
-
-                                        lblUserRight.setText(":" + item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName());
-                                        lblTextRight.setText(item.getMessage());
-                                        setGraphic(hBoxRight);
-                                    } else {
-                                        lblUserLeft.setText(item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName() + ":");
-                                        lblTextLeft.setText(item.getMessage());
-                                        setGraphic(hBoxLeft);
-                                    }
+                                    lblUserLeft.setText(item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName() + ":");
+                                    lblTextLeft.setText(item.getMessage());
+                                    setGraphic(hBoxLeft);
                                 }
                             }
+                        }
 
-                        };
-                        return cell;
                     });
                 }
             });
         }
     }
-
 
     public void sendMessage() {
         String messageText = textFieldMessage.getText();
@@ -312,37 +307,39 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         if(selectedChat.getUsers().size() == 2){
             if(service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getFirstName().equals(loggedUser.getFirstName()) && service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getLastName().equals(loggedUser.getLastName())){
                 toUsers.add(new Tuple<>(service.getUserRepo().findOne(selectedChat.getUsers().get(1)).getFirstName(),service.getUserRepo().findOne(selectedChat.getUsers().get(1)).getLastName()));
-                service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, model.get(model.size()-1));
+                service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, null);
                 textFieldMessage.clear();
                 List<User> toUser = new ArrayList<>();
                 toUser.add(service.getUserRepo().findOne(selectedChat.getUsers().get(1)));
-                model.add(new Message(loggedUser,toUser,messageText, LocalDateTime.now(),model.get(model.size()-1)));
+                modelMessages.add(new Message(loggedUser,toUser,messageText, LocalDateTime.now(),null));
             }
             else{
                 toUsers.add(new Tuple<>(service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getFirstName(),service.getUserRepo().findOne(selectedChat.getUsers().get(0)).getLastName()));
-                service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, model.get(model.size()-1));
+                service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, null);
                 textFieldMessage.clear();
                 List<User> toUser = new ArrayList<>();
                 toUser.add(service.getUserRepo().findOne(selectedChat.getUsers().get(0)));
-                model.add(new Message(loggedUser,toUser,messageText, LocalDateTime.now(),model.get(model.size()-1)));
+                modelMessages.add(new Message(loggedUser,toUser,messageText, LocalDateTime.now(),null));
             }
         }
         else{
             List<User> toUser = new ArrayList<>();
             for(Long id:selectedChat.getUsers()){
-                if(loggedUser.getId()!=id) {
+                if(!Objects.equals(loggedUser.getId(), id)) {
                     toUsers.add(new Tuple<>(service.getUserRepo().findOne(id).getFirstName(), service.getUserRepo().findOne(id).getLastName()));
                     toUser.add(service.getUserRepo().findOne(id));
                 }
             }
             service.sendMessage(loggedUser.getFirstName(),loggedUser.getLastName(),toUsers,messageText,null);
             textFieldMessage.clear();
-            model.add(new Message(loggedUser,toUser,messageText,LocalDateTime.now(),null));
+            modelMessages.add(new Message(loggedUser,toUser,messageText,LocalDateTime.now(),null));
         }
+
+        service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.MESSAGE, null));
     }
 
     @FXML
-    public void handleFriendsButton(ActionEvent event){
+    public void handleFriendsButton(){
         paneFriends.toFront();
     }
 
@@ -350,7 +347,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         try{
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("views/edit-friend-request.fxml"));
-            AnchorPane root = (AnchorPane) loader.load();
+            AnchorPane root = loader.load();
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Send Friend Request");
             dialogStage.initModality(Modality.WINDOW_MODAL);
@@ -366,12 +363,12 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     @FXML
-    public void handleAddFriend(ActionEvent ev){
+    public void handleAddFriend(){
         showFriendEditDialog();
     }
 
     @FXML
-    public void handleRemoveFriend(ActionEvent ev){
+    public void handleRemoveFriend(){
         FriendDTO selectedFriendDTO = tableFriends.getSelectionModel().selectedItemProperty().getValue();
         if(selectedFriendDTO == null){
             MessageAlert.showErrorMessage(null, "No friend selected!");
@@ -384,7 +381,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     @FXML
-    public void handleRequestsButton(ActionEvent event){
+    public void handleRequestsButton(){
         paneRequests.toFront();
     }
 
@@ -393,12 +390,12 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             case APPROVED -> service.respondFriendRequest(sender.getFirstName(),sender.getLastName(),loggedUser.getFirstName(),loggedUser.getLastName(), "APPROVE");
             case REJECTED -> service.respondFriendRequest(sender.getFirstName(),sender.getLastName(),loggedUser.getFirstName(),loggedUser.getLastName(), "REJECT");
         }
-        service.notifyObservers(null);
+        service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.FRIEND_REQUEST, null));
         MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Information", "Friend request updated!");
     }
 
     @FXML
-    public void handleApproveButton(ActionEvent event){
+    public void handleApproveButton(){
         FriendRequestDTO selectedRequestDTO = tableReceivedRequests.getSelectionModel().selectedItemProperty().getValue();
         try{
             validateRequestSelection(selectedRequestDTO);
@@ -410,7 +407,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     @FXML
-    public void handleRejectButton(ActionEvent event){
+    public void handleRejectButton(){
         FriendRequestDTO selectedRequestDTO = tableReceivedRequests.getSelectionModel().selectedItemProperty().getValue();
         try{
             validateRequestSelection(selectedRequestDTO);
@@ -431,21 +428,21 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     @FXML
-    public void handleSentReqButton(ActionEvent event) {
+    public void handleSentReqButton() {
         sentPane.toFront();
         sentPane.setVisible(true);
         receivedPane.setVisible(false);
     }
 
     @FXML
-    public void handleReceivedReqButton(ActionEvent event) {
+    public void handleReceivedReqButton() {
         receivedPane.toFront();
         receivedPane.setVisible(true);
         sentPane.setVisible(false);
     }
 
     @FXML
-    public void handleUnsendButton(ActionEvent event) {
+    public void handleUnsendButton() {
         FriendRequestDTO requestDTO = tableSentRequests.getSelectionModel().selectedItemProperty().getValue();
         if(requestDTO == null){
             MessageAlert.showErrorMessage(null, "No friend request selected!");
@@ -457,17 +454,17 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             User user = requestDTO.getSender();
             service.removeFriendRequest(loggedUser.getFirstName(), loggedUser.getLastName(), user.getFirstName(), user.getLastName());
             MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Information", "Friend request unsent successfully!");
-            service.notifyObservers(null);
+            service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.REQUEST, null));
         }
     }
 
     @FXML
-    public void handleMessagesButton(ActionEvent actionEvent) {
+    public void handleMessagesButton() {
         paneMessages.toFront();
     }
 
     @FXML
-    public void handleLogOut(ActionEvent ev){
+    public void handleLogOut(){
         accountStage.close();
     }
 }

@@ -1,5 +1,5 @@
 package com.example.socialnetworkgui.utils.events;
 
 public enum ChangeEventType {
-    ADD, DELETE;
+    FRIEND_REQUEST, MESSAGE, REQUEST, ALL
 }
