@@ -4,6 +4,8 @@ import com.example.socialnetworkgui.domain.User;
 import com.example.socialnetworkgui.domain.validators.RequestException;
 import com.example.socialnetworkgui.domain.validators.ValidationException;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
+import com.example.socialnetworkgui.utils.events.ChangeEventType;
+import com.example.socialnetworkgui.utils.events.UserFriendChangeEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
@@ -36,7 +38,7 @@ public class EditFriendRequestController {
         String lastName = textFieldLastName.getText();
         User friend = new User(firstName,lastName);
         saveFriendRequest(loggedUser, friend);
-        service.notifyObservers(null);
+        service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.FRIEND_REQUEST,null));
     }
 
     private void saveFriendRequest(User loggedUser, User friend) {
