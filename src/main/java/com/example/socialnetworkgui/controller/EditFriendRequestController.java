@@ -38,7 +38,7 @@ public class EditFriendRequestController {
         String lastName = textFieldLastName.getText();
         User friend = new User(firstName,lastName);
         saveFriendRequest(loggedUser, friend);
-        service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.FRIEND_REQUEST,null));
+        service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.FRIEND_ADD,null));
     }
 
     private void saveFriendRequest(User loggedUser, User friend) {
