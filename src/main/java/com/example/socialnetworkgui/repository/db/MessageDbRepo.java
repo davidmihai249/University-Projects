@@ -96,6 +96,28 @@ public class MessageDbRepo implements Repository<Long, Message> {
         return toUsers;
     }
 
+    public Long findreply(Long ID){
+        if(ID==null){
+            throw new MessageException("Invalid message id!");
+        }
+        else{
+            try (Connection connection = DriverManager.getConnection(url,username,password);
+                 PreparedStatement ps = connection.prepareStatement("SELECT reply_id FROM correspondences WHERE message_id = (?)"))
+            {
+                ps.setLong(1, ID);
+                ResultSet resultSet = ps.executeQuery();
+                if(resultSet.next()){
+                    Long replyID = resultSet.getLong("reply_id");
+                    return replyID;
+                }
+            }
+            catch (SQLException e){
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
     @Override
     public Iterable<Message> findAll() {
         Set<Message> messages = new HashSet<>();
@@ -108,7 +130,9 @@ public class MessageDbRepo implements Repository<Long, Message> {
                 String messageText = resultSet.getString("message");
                 LocalDateTime dateTime = resultSet.getTimestamp("date").toLocalDateTime();
                 List<User> toUsers = getToUsersList(messageID);
-                Message message = new Message(getSenderUser(messageID),toUsers,messageText,dateTime,null);
+                Long replyID = findreply(messageID);
+                Message reply = findOne(replyID);
+                Message message = new Message(getSenderUser(messageID),toUsers,messageText,dateTime,reply);
                 message.setId(messageID);
                 messages.add(message);
 
