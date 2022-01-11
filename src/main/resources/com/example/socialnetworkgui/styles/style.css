@@ -7,6 +7,10 @@
     -fx-background-color: #6930C3;
 }
 
+.button:focused{
+    -fx-background-color: #5E60CE;
+}
+
 #buttonApprove:hover {
     -fx-background-color: #33cc33;
     -fx-text-fill: black;

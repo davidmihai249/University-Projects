@@ -3,7 +3,7 @@ package com.example.socialnetworkgui;
 import com.example.socialnetworkgui.domain.User;
 import com.example.socialnetworkgui.repository.db.UserDbRepo;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
-import javafx.event.ActionEvent;
+import com.example.socialnetworkgui.utils.security.PasswordHashing;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -15,6 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -25,6 +26,10 @@ import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
     private UserFriendshipDbService service;
+    @FXML
+    private Button registerButton;
+    @FXML
+    private Button logInButton;
     @FXML
     private Button cancelButton;
     @FXML
@@ -43,12 +48,13 @@ public class LoginController implements Initializable {
         brandingImageView.setImage(brandingImage);
     }
 
-    public void loginButtonOnAction(ActionEvent event){
+    public void loginButtonOnAction(){
         if(!usernameTextField.getText().isBlank() && !enterPasswordField.getText().isBlank()){
             String username = usernameTextField.getText();
             String password = enterPasswordField.getText();
-            User searchedUser = ((UserDbRepo) service.getUserRepo()).findUserLogin(username,password);
-            if(searchedUser != null){
+            String hashedPassword = ((UserDbRepo) service.getUserRepo()).findUserPassword(username);
+            if(PasswordHashing.checkPassword(password,hashedPassword)){
+                User searchedUser = ((UserDbRepo) service.getUserRepo()).findUserLogin(username,hashedPassword);
                 loginMessageLabel.setText("You're logged in.");
                 clearFieldsAndLabel();
                 try{
@@ -80,7 +86,7 @@ public class LoginController implements Initializable {
         }
     }
 
-    public void cancelButtonOnAction(ActionEvent event){
+    public void cancelButtonOnAction(){
         Stage stage = (Stage) cancelButton.getScene().getWindow();
         stage.close();
     }
@@ -97,5 +103,24 @@ public class LoginController implements Initializable {
     private void clearFieldsAndLabel(){
         loginMessageLabel.setText("");
         clearFields();
+    }
+
+    public void handleRegisterButton() {
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("views/user-register.fxml"));
+            AnchorPane root = loader.load();
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Register new user");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            Scene scene = new Scene(root);
+            dialogStage.setScene(scene);
+            RegisterController registerController = loader.getController();
+            registerController.setService(service, dialogStage);
+            dialogStage.show();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
     }
 }

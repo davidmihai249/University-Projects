@@ -217,6 +217,9 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 initModelReceivedRequest();
                 initModelSentRequest();
             }
+            case REGISTRATION: {
+
+            }
         }
     }
 
