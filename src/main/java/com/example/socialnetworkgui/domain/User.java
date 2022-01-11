@@ -8,6 +8,8 @@ public class User extends Entity<Long>{
     private String firstName;
     private String lastName;
     private List<Long> friends;
+    private String userName;
+    private String password;
 
     /**
      * Constructor
@@ -18,6 +20,14 @@ public class User extends Entity<Long>{
         this.firstName = firstName;
         this.lastName = lastName;
         this.friends = new ArrayList<>();
+    }
+
+    public User(String firstName, String lastName, String userName, String password) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.friends = new ArrayList<>();
+        this.userName = userName;
+        this.password = password;
     }
 
     /**
@@ -62,6 +72,22 @@ public class User extends Entity<Long>{
      */
     public void setFriends(List<Long> friends) {
         this.friends = friends;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Override

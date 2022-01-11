@@ -47,7 +47,6 @@ public class UserDbRepo implements Repository<Long, User> {
                 String lastName = resultSet.getString("last_name");
                 User user = new User(firstName,lastName);
                 user.setId(id);
-                //user.setFriends(getFriendsIds(user));
                 users.add(user);
             }
             return users;
@@ -57,15 +56,15 @@ public class UserDbRepo implements Repository<Long, User> {
         return users;
     }
 
-    public void save_login(String first_name,String last_name,String username,String password){
-        String sql = "INSERT INTO users (first_name, last_name,username,password) VALUES (?, ?,?,?)";
-        try(Connection connection = DriverManager.getConnection(url,username,password);
+    public void saveLogin(String first_name,String last_name,String username,String password){
+        String sql = "INSERT INTO users (first_name, last_name,username,password) VALUES (?,?,?,?)";
+        try(Connection connection = DriverManager.getConnection(this.url,this.username,this.password);
             PreparedStatement ps = connection.prepareStatement(sql) )
         {
             ps.setString(1, first_name);
             ps.setString(2, last_name);
-            ps.setString(3,username);
-            ps.setString(4,password);
+            ps.setString(3, username);
+            ps.setString(4, password);
             ps.executeUpdate();
         }catch (SQLException e){
             e.printStackTrace();
@@ -97,7 +96,7 @@ public class UserDbRepo implements Repository<Long, User> {
      */
     public User findUserLogin(String usernameString,String passwordString){
         try (Connection connection = DriverManager.getConnection(url,username,password);
-             PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE username=(?) AND password=(?)");)
+             PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE username=(?) AND password=(?)"))
         {
             ps.setString(1,usernameString);
             ps.setString(2,passwordString);
@@ -109,6 +108,21 @@ public class UserDbRepo implements Repository<Long, User> {
                 User user = new User(firstName,lastName);
                 user.setId(id);
                 return user;
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String findUserPassword(String userName){
+        try (Connection connection = DriverManager.getConnection(url,username,password);
+             PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE username=(?)"))
+        {
+            ps.setString(1,userName);
+            ResultSet resultSet = ps.executeQuery();
+            if(resultSet.next()){
+                return resultSet.getString("password");
             }
         } catch (SQLException e){
             e.printStackTrace();

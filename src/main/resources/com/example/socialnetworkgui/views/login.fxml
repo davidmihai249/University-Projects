@@ -41,12 +41,17 @@
             </font>
          </Label>
          <PasswordField fx:id="enterPasswordField" layoutX="99.0" layoutY="147.0" prefHeight="26.0" prefWidth="173.0" promptText="Password" />
-         <Button layoutX="33.0" layoutY="227.0" mnemonicParsing="false" onAction="#loginButtonOnAction" prefHeight="32.0" prefWidth="240.0" style="-fx-background-color: #632eb8;" text="Login" textFill="WHITE">
+         <Button fx:id="registerButton" onAction="#handleRegisterButton" layoutX="32.0" layoutY="240.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="240.0" stylesheets="@../styles/style.css" text="Register" textFill="WHITE">
             <font>
                <Font size="13.0" />
             </font>
          </Button>
-         <Button fx:id="cancelButton" layoutX="33.0" layoutY="276.0" mnemonicParsing="false" onAction="#cancelButtonOnAction" prefHeight="32.0" prefWidth="240.0" style="-fx-background-color: #632eb8;" text="Cancel" textFill="WHITE">
+         <Button fx:id="logInButton" layoutX="32.0" layoutY="288.0" mnemonicParsing="false" onAction="#loginButtonOnAction" prefHeight="32.0" prefWidth="240.0" stylesheets="@../styles/style.css" text="Login" textFill="WHITE">
+            <font>
+               <Font size="13.0" />
+            </font>
+         </Button>
+         <Button fx:id="cancelButton" layoutX="32.0" layoutY="335.0" mnemonicParsing="false" onAction="#cancelButtonOnAction" prefHeight="32.0" prefWidth="240.0" stylesheets="@../styles/style.css" text="Cancel" textFill="WHITE">
             <font>
                <Font size="13.0" />
             </font>

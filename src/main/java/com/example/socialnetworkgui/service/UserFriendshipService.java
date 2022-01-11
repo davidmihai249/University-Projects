@@ -179,13 +179,13 @@ public class UserFriendshipService {
      * @return a list with FriendDTO objects
      */
     public List<FriendDTO> getAllFriendships(String UserFirstName, String UserLastName){
-        Long UserID = userService.getUserID(UserFirstName,UserLastName);
+        Long UserID = userService.getUserID(UserFirstName,UserLastName); //todo
         if(UserID == null){
             throw new IllegalArgumentException("\nInvalid user!");
         }
-        List<Tuple<Long>> friendshipsIDS = friendshipService.getFriendships(UserID);
+        List<Tuple<Long>> friendshipsIDS = friendshipService.getFriendships(UserID); //todo
         List<Friendship> friendships = new ArrayList<>();
-        friendshipsIDS.forEach(t -> friendships.add(friendshipService.getFriendshipRepo().findOne(t)));
+        friendshipsIDS.forEach(t -> friendships.add(friendshipService.getFriendshipRepo().findOne(t))); //todo
         Predicate<Friendship> checkUserID = f->f.getId().getLeft().equals(UserID) || f.getId().getRight().equals(UserID);
 
         List<FriendDTO> friendDTOS = new ArrayList<>();
