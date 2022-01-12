@@ -8,6 +8,7 @@ import com.example.socialnetworkgui.domain.validators.UserValidator;
 import com.example.socialnetworkgui.repository.Repository;
 import com.example.socialnetworkgui.repository.file.FriendshipFile;
 import com.example.socialnetworkgui.repository.file.UserFile;
+import com.example.socialnetworkgui.repository.paging.PagingRepository;
 import com.example.socialnetworkgui.service.UserFriendshipService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,13 +20,13 @@ import java.io.IOException;
 import java.util.List;
 
 class UserFriendshipServiceTests {
-    Repository<Long, User> userRepo;
+    PagingRepository<Long, User> userRepo;
     Repository<Tuple<Long>, Friendship> friendshipRepo;
     UserFriendshipService srv;
 
     @BeforeEach
     void setUp() {
-        userRepo = new UserFile("data/testUsers.in", new UserValidator());
+        userRepo = (PagingRepository<Long, User>) new UserFile("data/testUsers.in", new UserValidator());
         friendshipRepo = new FriendshipFile("data/testFriendships.in", new FriendshipValidator());
         srv = new UserFriendshipService(userRepo,friendshipRepo);
     }

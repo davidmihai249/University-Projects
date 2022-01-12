@@ -1,7 +1,6 @@
 package com.example.socialnetworkgui;
 
 import com.example.socialnetworkgui.controller.EditFriendRequestController;
-import com.example.socialnetworkgui.controller.MessageAlert;
 import com.example.socialnetworkgui.domain.*;
 import com.example.socialnetworkgui.domain.validators.RequestException;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
@@ -35,7 +34,7 @@ import java.util.Objects;
 import java.util.stream.StreamSupport;
 
 public class AccountController implements Observer<UserFriendChangeEvent> {
-    User loggedUser;
+    Page mainPage;
     UserFriendshipDbService service;
     ObservableList<FriendDTO> modelFriend = FXCollections.observableArrayList();
     ObservableList<FriendRequestDTO> modelRequest = FXCollections.observableArrayList();
@@ -130,10 +129,10 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     Chat selectedChat;
 
-    public void setUserFriendshipService(UserFriendshipDbService userFriendshipDbService, User user, Stage stage,AnchorPane pane){
-        loggedUser = user;
-        labelLoggedUser.setText(user.getFirstName() + " " + user.getLastName());
-        service = userFriendshipDbService;
+    public void setUp(Page page, Stage stage, AnchorPane pane){
+        mainPage = page;
+        labelLoggedUser.setText(mainPage.getFirstName() + " " + mainPage.getLastName());
+        service = page.getService();
         service.addObserver(this);
         service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.ALL,null));
         accountStage = stage;
@@ -163,7 +162,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             SimpleStringProperty chatName = new SimpleStringProperty(chatNameString);
             User firstUser = service.getUserRepo().findOne(features.getValue().getUsers().get(0));
             if(features.getValue().getUsers().size()==2){
-                if(firstUser.getFirstName().equals(loggedUser.getFirstName()) && firstUser.getLastName().equals(loggedUser.getLastName())){
+                if(firstUser.getFirstName().equals(mainPage.getFirstName()) && firstUser.getLastName().equals(mainPage.getLastName())){
                     User secondUser = service.getUserRepo().findOne(features.getValue().getUsers().get(1));
                     return Bindings.when(chatName.isEmpty())
                             .then(secondUser.getFirstName() + " " + secondUser.getLastName())
@@ -228,7 +227,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         List<Chat> chatsList = StreamSupport.stream(chats.spliterator(),false).toList();
         List<Chat> finalChats = new ArrayList<>();
         chatsList.forEach(chat -> {
-            if(chat.getUsers().contains(loggedUser.getId())){
+            if(chat.getUsers().contains(mainPage.getUser().getId())){
                 finalChats.add(chat);
             }
         });
@@ -236,19 +235,19 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     private void initModelFriend() {
-        Iterable<FriendDTO> friendDTOS = service.getAllFriendships(loggedUser.getFirstName(),loggedUser.getLastName());
+        Iterable<FriendDTO> friendDTOS = mainPage.getFriendsList();
         List<FriendDTO> friendDTOList = StreamSupport.stream(friendDTOS.spliterator(), false).toList();
         modelFriend.setAll(friendDTOList);
     }
 
     private void initModelReceivedRequest() {
-        Iterable<FriendRequestDTO> requests = service.getUsersRequests(loggedUser.getFirstName(),loggedUser.getLastName()); //todo
+        Iterable<FriendRequestDTO> requests = mainPage.findReceivedRequests();
         List<FriendRequestDTO> friendDTOList = StreamSupport.stream(requests.spliterator(), false).toList();
         modelRequest.setAll(friendDTOList);
     }
 
     private void initModelSentRequest() {
-        Iterable<FriendRequestDTO> requests = service.getUsersSentRequests(loggedUser.getFirstName(),loggedUser.getLastName());
+        Iterable<FriendRequestDTO> requests = mainPage.findSentRequests();
         List<FriendRequestDTO> friendDTOList = StreamSupport.stream(requests.spliterator(), false).toList();
         modelSentRequest.setAll(friendDTOList);
     }
@@ -295,7 +294,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                                 setText(null);
                                 setGraphic(null);
                             } else {
-                                if (item.getFromUser().getFirstName().equals(loggedUser.getFirstName()) && item.getFromUser().getLastName().equals(loggedUser.getLastName())) {
+                                if (item.getFromUser().getFirstName().equals(mainPage.getFirstName()) && item.getFromUser().getLastName().equals(mainPage.getLastName())) {
 
                                     if(item.getReply()!=null){
                                         lblUserRight.setText(":" + item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName());
@@ -337,27 +336,27 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 User secondUser = service.getUserRepo().findOne(selectedChat.getUsers().get(1));
                 List<User> toUser = new ArrayList<>();
                 textFieldMessage.clear();
-                if (firstUser.getFirstName().equals(loggedUser.getFirstName()) && firstUser.getLastName().equals(loggedUser.getLastName())) {
+                if (firstUser.getFirstName().equals(mainPage.getFirstName()) && firstUser.getLastName().equals(mainPage.getLastName())) {
                     toUsers.add(new Tuple<>(secondUser.getFirstName(), secondUser.getLastName()));
                     toUser.add(secondUser);
                 } else {
                     toUsers.add(new Tuple<>(firstUser.getFirstName(), firstUser.getLastName()));
                     toUser.add(firstUser);
                 }
-                service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, null);
-                modelMessages.add(new Message(loggedUser, toUser, messageText, LocalDateTime.now(), null));
+                service.sendMessage(mainPage.getFirstName(), mainPage.getLastName(), toUsers, messageText, null);
+                modelMessages.add(new Message(mainPage.getUser(), toUser, messageText, LocalDateTime.now(), null));
             } else {
                 List<User> toUser = new ArrayList<>();
                 for (Long id : selectedChat.getUsers()) {
-                    if (!Objects.equals(loggedUser.getId(), id)) {
+                    if (!Objects.equals(mainPage.getUser().getId(), id)) {
                         User user = service.getUserRepo().findOne(id);
                         toUsers.add(new Tuple<>(user.getFirstName(), user.getLastName()));
                         toUser.add(user);
                     }
                 }
-                service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, null);
+                service.sendMessage(mainPage.getFirstName(), mainPage.getLastName(), toUsers, messageText, null);
                 textFieldMessage.clear();
-                modelMessages.add(new Message(loggedUser, toUser, messageText, LocalDateTime.now(), null));
+                modelMessages.add(new Message(mainPage.getUser(), toUser, messageText, LocalDateTime.now(), null));
             }
         }
         else{
@@ -368,7 +367,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 User secondUser = service.getUserRepo().findOne(selectedChat.getUsers().get(1));
                 List<User> toUser = new ArrayList<>();
                 textFieldMessage.clear();
-                if(firstUser.getFirstName().equals(loggedUser.getFirstName()) && firstUser.getLastName().equals(loggedUser.getLastName())){
+                if(firstUser.getFirstName().equals(mainPage.getFirstName()) && firstUser.getLastName().equals(mainPage.getLastName())){
                     toUsers.add(new Tuple<>(secondUser.getFirstName(),secondUser.getLastName()));
                     toUser.add(secondUser);
                 }
@@ -376,24 +375,23 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                     toUsers.add(new Tuple<>(firstUser.getFirstName(),firstUser.getLastName()));
                     toUser.add(firstUser);
                 }
-                service.sendMessage(loggedUser.getFirstName(), loggedUser.getLastName(), toUsers, messageText, msg);
-                modelMessages.add(new Message(loggedUser,toUser,messageText, LocalDateTime.now(),msg));
+                service.sendMessage(mainPage.getFirstName(), mainPage.getLastName(), toUsers, messageText, null);
+                modelMessages.add(new Message(mainPage.getUser(),toUser,messageText, LocalDateTime.now(),null));
             }
             else{
                 List<User> toUser = new ArrayList<>();
                 for(Long id:selectedChat.getUsers()){
-                    if(!Objects.equals(loggedUser.getId(), id)) {
+                    if(!Objects.equals(mainPage.getUser().getId(), id)) {
                         User user = service.getUserRepo().findOne(id);
                         toUsers.add(new Tuple<>(user.getFirstName(), user.getLastName()));
                         toUser.add(user);
                     }
                 }
-                service.sendMessage(loggedUser.getFirstName(),loggedUser.getLastName(),toUsers,messageText,msg);
+                service.sendMessage(mainPage.getFirstName(),mainPage.getLastName(),toUsers,messageText,null);
                 textFieldMessage.clear();
-                modelMessages.add(new Message(loggedUser,toUser,messageText,LocalDateTime.now(),msg));
+                modelMessages.add(new Message(mainPage.getUser(),toUser,messageText,LocalDateTime.now(),null));
             }
         }
-
         service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.MESSAGE, null));
         listViewConversation.getSelectionModel().clearSelection();
     }
@@ -414,7 +412,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             Scene scene = new Scene(root);
             dialogStage.setScene(scene);
             EditFriendRequestController editFriendRequestController = loader.getController();
-            editFriendRequestController.setService(service, dialogStage, loggedUser);
+            editFriendRequestController.setService(service, dialogStage, mainPage.getUser());
             dialogStage.show();
         }
         catch (IOException e){
@@ -434,7 +432,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             MessageAlert.showErrorMessage(null, "No friend selected!");
         }
         else{
-            service.removeFriend(loggedUser.getFirstName(), loggedUser.getLastName(), selectedFriendDTO.getFriend().getFirstName(), selectedFriendDTO.getFriend().getLastName());
+            mainPage.removeFriend(selectedFriendDTO.getFriend().getFirstName(), selectedFriendDTO.getFriend().getLastName());
             service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.FRIEND_REMOVE, null));
             MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Information", "Friend has been removed");
         }
@@ -448,11 +446,11 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     private void respondToRequest(User sender, RequestStatus status){
         switch (status){
             case APPROVED -> {
-                service.respondFriendRequest(sender.getFirstName(),sender.getLastName(),loggedUser.getFirstName(),loggedUser.getLastName(), "APPROVE");
+                service.respondFriendRequest(sender.getFirstName(),sender.getLastName(),mainPage.getFirstName(),mainPage.getLastName(), "APPROVE");
                 service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.REQUEST_APPROVE, null));
             }
             case REJECTED -> {
-                service.respondFriendRequest(sender.getFirstName(),sender.getLastName(),loggedUser.getFirstName(),loggedUser.getLastName(), "REJECT");
+                service.respondFriendRequest(sender.getFirstName(),sender.getLastName(),mainPage.getFirstName(),mainPage.getLastName(), "REJECT");
                 service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.REQUEST_REJECT, null));
             }
         }
@@ -518,7 +516,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         }
         else{
             User user = requestDTO.getSender();
-            service.removeFriendRequest(loggedUser.getFirstName(), loggedUser.getLastName(), user.getFirstName(), user.getLastName()); //todo
+            mainPage.unsendFriendRequest(user.getFirstName(),user.getLastName());
             MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Information", "Friend request unsent successfully!");
             service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.REQUEST_UNSEND, null));
         }

@@ -19,6 +19,7 @@ module main {
     exports com.example.socialnetworkgui.utils.events;
     exports com.example.socialnetworkgui.utils.observer;
     exports com.example.socialnetworkgui.repository;
+    exports com.example.socialnetworkgui.repository.paging;
 
     requires de.jensd.fx.glyphs.fontawesome;
 

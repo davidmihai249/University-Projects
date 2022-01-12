@@ -187,7 +187,6 @@ public class UserFriendshipService {
         List<Friendship> friendships = new ArrayList<>();
         friendshipsIDS.forEach(t -> friendships.add(friendshipService.getFriendshipRepo().findOne(t))); //todo
         Predicate<Friendship> checkUserID = f->f.getId().getLeft().equals(UserID) || f.getId().getRight().equals(UserID);
-
         List<FriendDTO> friendDTOS = new ArrayList<>();
         friendships
                 .stream()
@@ -262,5 +261,9 @@ public class UserFriendshipService {
             case "december" -> Month.DECEMBER;
             default -> null;
         };
+    }
+
+    public User getUser(String firstName, String lastName) {
+        return userService.getUser(firstName,lastName);
     }
 }

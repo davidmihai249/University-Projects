@@ -115,6 +115,10 @@ public class UserDbRepo implements Repository<Long, User> {
         return null;
     }
 
+    /**
+     * @param userName the username typed by the user in the login page
+     * @return the hashed password of the user with the username "userName", or null if there is no such username
+     */
     public String findUserPassword(String userName){
         try (Connection connection = DriverManager.getConnection(url,username,password);
              PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE username=(?)"))

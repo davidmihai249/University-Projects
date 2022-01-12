@@ -1,6 +1,6 @@
 package com.example.socialnetworkgui;
 
-import com.example.socialnetworkgui.domain.User;
+import com.example.socialnetworkgui.domain.*;
 import com.example.socialnetworkgui.repository.db.UserDbRepo;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
 import com.example.socialnetworkgui.utils.security.PasswordHashing;
@@ -21,15 +21,12 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
     private UserFriendshipDbService service;
-    @FXML
-    private Button registerButton;
-    @FXML
-    private Button logInButton;
     @FXML
     private Button cancelButton;
     @FXML
@@ -53,31 +50,42 @@ public class LoginController implements Initializable {
             String username = usernameTextField.getText();
             String password = enterPasswordField.getText();
             String hashedPassword = ((UserDbRepo) service.getUserRepo()).findUserPassword(username);
-            if(PasswordHashing.checkPassword(password,hashedPassword)){
-                User searchedUser = ((UserDbRepo) service.getUserRepo()).findUserLogin(username,hashedPassword);
-                loginMessageLabel.setText("You're logged in.");
-                clearFieldsAndLabel();
-                try{
-                    FXMLLoader accountLoader = new FXMLLoader();
-                    accountLoader.setLocation(getClass().getResource("views/account.fxml"));
-                    AnchorPane root = accountLoader.load();
-                    Scene scene = new Scene(root);
-                    String css = Objects.requireNonNull(this.getClass().getResource("styles/style.css")).toExternalForm();
-                    scene.getStylesheets().add(css);
-                    Stage stage = new Stage();
-                    stage.setScene(scene);
-                    AccountController accountController = accountLoader.getController();
-                    accountController.setUserFriendshipService(service, searchedUser, stage, root);
-                    stage.setTitle("SocialNetwork");
-                    stage.show();
-                }
-                catch (IOException e){
-                    e.printStackTrace();
-                }
-            }
-            else{
+            if(hashedPassword == null){
                 loginMessageLabel.setText("Invalid input, please try again.");
                 clearFields();
+            }
+            else {
+                if (PasswordHashing.checkPassword(password, hashedPassword)) {
+                    User searchedUser = ((UserDbRepo) service.getUserRepo()).findUserLogin(username, hashedPassword);
+                    loginMessageLabel.setText("You're logged in.");
+                    clearFieldsAndLabel();
+                    try {
+                        FXMLLoader accountLoader = new FXMLLoader();
+                        accountLoader.setLocation(getClass().getResource("views/account.fxml"));
+                        AnchorPane root = accountLoader.load();
+                        Scene scene = new Scene(root);
+                        String css = Objects.requireNonNull(this.getClass().getResource("styles/style.css")).toExternalForm();
+                        scene.getStylesheets().add(css);
+                        Stage stage = new Stage();
+                        stage.setScene(scene);
+                        AccountController accountController = accountLoader.getController();
+                        String userFirstName = searchedUser.getFirstName();
+                        String userLastName = searchedUser.getLastName();
+                        List<FriendDTO> friends = service.getAllFriendships(userFirstName,userLastName); //todo
+                        List<Message> messages = service.getReceivedMessages(userFirstName,userLastName); //todo
+                        List<FriendRequestDTO> requests = service.getUsersRequests(userFirstName,userLastName); //todo
+                        Page page = new Page(userFirstName,userLastName,friends,messages,requests);
+                        page.setService(service);
+                        accountController.setUp(page,stage,root); //todo
+                        stage.setTitle("Circus");
+                        stage.show();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    loginMessageLabel.setText("Invalid input, please try again.");
+                    clearFields();
+                }
             }
         }
         else{
