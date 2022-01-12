@@ -296,13 +296,26 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                             } else {
                                 if (item.getFromUser().getFirstName().equals(mainPage.getFirstName()) && item.getFromUser().getLastName().equals(mainPage.getLastName())) {
 
-                                    lblUserRight.setText(":" + item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName());
-                                    lblTextRight.setText(item.getMessage());
-                                    setGraphic(hBoxRight);
+                                    if(item.getReply()!=null){
+                                        lblUserRight.setText(":" + item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName());
+                                        lblTextRight.setText(item.getReply().getMessage() + '\n'+ item.getMessage());
+                                        setGraphic(hBoxRight);
+                                    }
+                                    else {
+                                        lblUserRight.setText(":" + item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName());
+                                        lblTextRight.setText(item.getMessage());
+                                        setGraphic(hBoxRight);
+                                    }
                                 } else {
-                                    lblUserLeft.setText(item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName() + ":");
-                                    lblTextLeft.setText(item.getMessage());
-                                    setGraphic(hBoxLeft);
+                                    if (item.getReply() != null) {
+                                        lblUserLeft.setText(item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName() + ":");
+                                        lblTextLeft.setText(item.getReply().getMessage()+ '\n'+ item.getMessage());
+                                        setGraphic(hBoxLeft);
+                                    } else {
+                                        lblUserLeft.setText(item.getFromUser().getFirstName() + " " + item.getFromUser().getLastName() + ":");
+                                        lblTextLeft.setText(item.getMessage());
+                                        setGraphic(hBoxLeft);
+                                    }
                                 }
                             }
                         }
@@ -314,12 +327,41 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     public void sendMessage() {
-        String messageText = textFieldMessage.getText();
-        List<Tuple<String>> toUsers = new ArrayList<>();
-        if(selectedChat == null){
-            MessageAlert.showErrorMessage(null, "No chat selected from Chat List");
+        Message msg = listViewConversation.getSelectionModel().getSelectedItem();
+        if(msg == null) {
+            String messageText = textFieldMessage.getText();
+            List<Tuple<String>> toUsers = new ArrayList<>();
+            if (selectedChat.getUsers().size() == 2) {
+                User firstUser = service.getUserRepo().findOne(selectedChat.getUsers().get(0));
+                User secondUser = service.getUserRepo().findOne(selectedChat.getUsers().get(1));
+                List<User> toUser = new ArrayList<>();
+                textFieldMessage.clear();
+                if (firstUser.getFirstName().equals(mainPage.getFirstName()) && firstUser.getLastName().equals(mainPage.getLastName())) {
+                    toUsers.add(new Tuple<>(secondUser.getFirstName(), secondUser.getLastName()));
+                    toUser.add(secondUser);
+                } else {
+                    toUsers.add(new Tuple<>(firstUser.getFirstName(), firstUser.getLastName()));
+                    toUser.add(firstUser);
+                }
+                service.sendMessage(mainPage.getFirstName(), mainPage.getLastName(), toUsers, messageText, null);
+                modelMessages.add(new Message(mainPage.getUser(), toUser, messageText, LocalDateTime.now(), null));
+            } else {
+                List<User> toUser = new ArrayList<>();
+                for (Long id : selectedChat.getUsers()) {
+                    if (!Objects.equals(mainPage.getUser().getId(), id)) {
+                        User user = service.getUserRepo().findOne(id);
+                        toUsers.add(new Tuple<>(user.getFirstName(), user.getLastName()));
+                        toUser.add(user);
+                    }
+                }
+                service.sendMessage(mainPage.getFirstName(), mainPage.getLastName(), toUsers, messageText, null);
+                textFieldMessage.clear();
+                modelMessages.add(new Message(mainPage.getUser(), toUser, messageText, LocalDateTime.now(), null));
+            }
         }
         else{
+            String messageText = textFieldMessage.getText();
+            List<Tuple<String>> toUsers = new ArrayList<>();
             if(selectedChat.getUsers().size() == 2){
                 User firstUser = service.getUserRepo().findOne(selectedChat.getUsers().get(0));
                 User secondUser = service.getUserRepo().findOne(selectedChat.getUsers().get(1));
@@ -349,8 +391,9 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 textFieldMessage.clear();
                 modelMessages.add(new Message(mainPage.getUser(),toUser,messageText,LocalDateTime.now(),null));
             }
-            service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.MESSAGE, null));
         }
+        service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.MESSAGE, null));
+        listViewConversation.getSelectionModel().clearSelection();
     }
 
     @FXML
