@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class UserFriendshipDbService extends UserFriendshipService implements Observable<UserFriendChangeEvent> {
@@ -308,6 +309,20 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
         } catch (NullPointerException e) {
             throw new IllegalArgumentException("Message id is invalid!");
         }
+    }
+
+    /**
+     * Find all messages received by a user
+     * @param firstName first name of the user
+     * @param lastName last name of the user
+     * @return a list with messages
+     */
+    public List<Message> getReceivedMessages(String firstName, String lastName) {
+        User user = getUser(firstName,lastName);
+        Spliterator<Message> spliterator = messageRepo.findAll().spliterator();
+        return StreamSupport.stream(spliterator,false)
+                .filter(m -> m.getToUser().contains(user))
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.example.socialnetworkgui.controller;
 
+import com.example.socialnetworkgui.MessageAlert;
 import com.example.socialnetworkgui.domain.User;
 import com.example.socialnetworkgui.domain.validators.RequestException;
 import com.example.socialnetworkgui.domain.validators.ValidationException;
