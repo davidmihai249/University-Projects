@@ -6,12 +6,15 @@ import com.example.socialnetworkgui.domain.validators.ValidationException;
 import com.example.socialnetworkgui.domain.validators.Validator;
 import com.example.socialnetworkgui.domain.validators.ValidatorEvent;
 import com.example.socialnetworkgui.repository.Repository;
+import com.example.socialnetworkgui.repository.paging.Page;
+import com.example.socialnetworkgui.repository.paging.Pageable;
+import com.example.socialnetworkgui.repository.paging.PageableImplementation;
+import com.example.socialnetworkgui.repository.paging.PagingRepository;
 import com.example.socialnetworkgui.utils.events.UserFriendChangeEvent;
 import com.example.socialnetworkgui.utils.observer.Observable;
 import com.example.socialnetworkgui.utils.observer.Observer;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,11 +24,11 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
     private final Repository<Tuple<Long>, FriendRequest> requestRepo;
     private final Repository<Long, Message> messageRepo;
     private final Repository<Long, Chat> chatRepo;
-    private final Repository<Long,Event> eventRepo;
+    private final PagingRepository<Long,Event> eventRepo;
     private final Repository<Tuple<Long>,Participant> participantRepo;
     private List<Observer<UserFriendChangeEvent>> observers = new ArrayList<>();
 
-    public UserFriendshipDbService(Repository<Long, User> userRepo, Repository<Tuple<Long>, Friendship> friendshipRepo, Repository<Tuple<Long>, FriendRequest> requestRepository, Repository<Long, Message> messageRepository, Repository<Long, Chat> chatRepo,Repository<Long,Event> eventRepo,Repository<Tuple<Long>,Participant> participantRepo){
+    public UserFriendshipDbService(Repository<Long, User> userRepo, Repository<Tuple<Long>, Friendship> friendshipRepo, Repository<Tuple<Long>, FriendRequest> requestRepository, Repository<Long, Message> messageRepository, Repository<Long, Chat> chatRepo,PagingRepository<Long,Event> eventRepo,Repository<Tuple<Long>,Participant> participantRepo){
         super(userRepo, friendshipRepo);
         requestRepo = requestRepository;
         messageRepo = messageRepository;
@@ -337,8 +340,54 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
                 .collect(Collectors.toList());
     }
 
+    private int page = 0;
+    private final int size = 1;
+
     public Repository<Long, Event> getEventRepo() {
         return eventRepo;
+    }
+
+    public Set<Event> getEventsOnPage(int pageNumber){
+        this.page = pageNumber;
+        Pageable pageable = new PageableImplementation(page, this.size);
+        Page<Event> eventsPage = eventRepo.findAll(pageable);
+        return eventsPage.getContent().collect(Collectors.toSet());
+    }
+
+    public Set<Event> getPreviousEvents(){
+        this.page--;
+        if(page >= 0){
+            Set<Event> events = getEventsOnPage(this.page);
+            if(events != null && !events.isEmpty()){
+                return getEventsOnPage(this.page);
+            }
+            else{
+                this.page++;
+                return null;
+            }
+        }
+        this.page++;
+        return null;
+    }
+
+    public Set<Event> getNextEvents(){
+        this.page++;
+        Set<Event> events = getEventsOnPage(this.page);
+        if(events != null && !events.isEmpty()){
+            return events;
+        }
+        else{
+            this.page--;
+            return null;
+        }
+    }
+
+    public int getPage(){
+        return this.page;
+    }
+
+    public void setPage(int newPage){
+        this.page = newPage;
     }
 
     public void addEvent(Event event) throws ValidationException{
@@ -355,11 +404,11 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
         participantRepo.delete(new Tuple<>(event.getId(),user.getId()));
     }
 
-    public void notificationson(Event event,User user){
+    public void notificationsOn(Event event, User user){
         participantRepo.update(new Participant(event.getId(),user.getId(),true));
     }
 
-    public void notificationsoff(Event event,User user){
+    public void notificationsOff(Event event, User user){
         participantRepo.update(new Participant(event.getId(),user.getId(),false));
     }
 

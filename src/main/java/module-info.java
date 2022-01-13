@@ -20,6 +20,7 @@ module main {
     exports com.example.socialnetworkgui.utils.observer;
     exports com.example.socialnetworkgui.repository;
     exports com.example.socialnetworkgui.repository.paging;
+    exports com.example.socialnetworkgui.domain.validators;
 
     requires de.jensd.fx.glyphs.fontawesome;
 
