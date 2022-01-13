@@ -24,6 +24,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LoginController implements Initializable {
     private UserFriendshipDbService service;
@@ -71,12 +73,13 @@ public class LoginController implements Initializable {
                         AccountController accountController = accountLoader.getController();
                         String userFirstName = searchedUser.getFirstName();
                         String userLastName = searchedUser.getLastName();
+//                        Logger logger = Logger.getLogger(LoginController.class.getName());
+//                        logger.log(Level.INFO, "start");
                         List<FriendDTO> friends = service.getAllFriendships(userFirstName,userLastName); //todo
-                        List<Message> messages = service.getReceivedMessages(userFirstName,userLastName); //todo
-                        List<FriendRequestDTO> requests = service.getUsersRequests(userFirstName,userLastName); //todo
-                        Page page = new Page(userFirstName,userLastName,friends,messages,requests);
+//                        logger.log(Level.INFO, "dupa prietenii");
+                        Page page = new Page(userFirstName,userLastName,friends);
                         page.setService(service);
-                        accountController.setUp(page,stage,root); //todo
+                        accountController.setUp(page,stage,root);
                         stage.setTitle("Circus");
                         stage.show();
                     } catch (IOException e) {

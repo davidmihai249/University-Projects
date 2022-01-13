@@ -1,7 +1,6 @@
 package com.example.socialnetworkgui.repository.db;
 
 import com.example.socialnetworkgui.domain.FriendRequest;
-import com.example.socialnetworkgui.domain.FriendRequestDTO;
 import com.example.socialnetworkgui.domain.RequestStatus;
 import com.example.socialnetworkgui.domain.Tuple;
 import com.example.socialnetworkgui.domain.validators.RequestException;
@@ -11,7 +10,6 @@ import com.example.socialnetworkgui.repository.Repository;
 
 import java.sql.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -161,5 +159,32 @@ public class RequestDbRepo implements Repository<Tuple<Long>, FriendRequest> {
             case PENDING -> 0;
             case APPROVED -> 1;
         };
+    }
+
+    public Iterable<FriendRequest> getUsersReceivedRequests(Long receiverID){
+        Set<FriendRequest> requests = new HashSet<>();
+        try (Connection connection = DriverManager.getConnection(url, username, password);
+             PreparedStatement ps = connection.prepareStatement("SELECT * FROM requests WHERE receiver_id = (?)"))
+        {
+            ps.setLong(1,receiverID);
+            ResultSet resultSet = ps.executeQuery();
+            while (resultSet.next()){
+                Long senderID = resultSet.getLong("sender_id");
+                int integerStatus = resultSet.getInt("status");
+                LocalDate date = LocalDate.parse(resultSet.getDate("date").toString());
+                RequestStatus status = getRequestStatus(integerStatus);
+                if (status == null){
+                    throw new ValidationException("Invalid friend request status!");
+                }
+                FriendRequest request = new FriendRequest(senderID,receiverID,status,date);
+                request.setId(new Tuple<>(senderID, receiverID));
+                requests.add(request);
+            }
+            return requests;
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+        return requests;
     }
 }

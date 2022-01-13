@@ -1,12 +1,13 @@
 package com.example.socialnetworkgui.service;
 
-import com.example.socialnetworkgui.MessageAlert;
 import com.example.socialnetworkgui.domain.*;
 import com.example.socialnetworkgui.domain.validators.RequestException;
 import com.example.socialnetworkgui.domain.validators.ValidationException;
 import com.example.socialnetworkgui.domain.validators.Validator;
 import com.example.socialnetworkgui.domain.validators.ValidatorEvent;
 import com.example.socialnetworkgui.repository.Repository;
+import com.example.socialnetworkgui.repository.db.MessageDbRepo;
+import com.example.socialnetworkgui.repository.db.RequestDbRepo;
 import com.example.socialnetworkgui.repository.paging.Page;
 import com.example.socialnetworkgui.repository.paging.Pageable;
 import com.example.socialnetworkgui.repository.paging.PageableImplementation;
@@ -176,11 +177,8 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
             throw new IllegalArgumentException("Receiver name is invalid!");
         }
         List<FriendRequestDTO> usersRequests = new ArrayList<>();
-        Iterable<FriendRequest> allRequests = requestRepo.findAll();
-        Spliterator<FriendRequest> spliterator = allRequests.spliterator();
-        StreamSupport.stream(spliterator, false)
-                .filter(x -> x.getId().getRight().equals(receiverId))
-                .forEach(f -> usersRequests.add(new FriendRequestDTO(userService.getUserRepo().findOne(f.getId().getLeft()), f.getStatus(),f.getDate())));
+        Iterable<FriendRequest> requests = ((RequestDbRepo)requestRepo).getUsersReceivedRequests(receiverId);
+        requests.forEach(f -> usersRequests.add(new FriendRequestDTO(userService.getUserRepo().findOne(f.getId().getLeft()), f.getStatus(),f.getDate())));
         return usersRequests;
     }
 
@@ -335,11 +333,8 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
      * @return a list with messages
      */
     public List<Message> getReceivedMessages(String firstName, String lastName) {
-        User user = getUser(firstName, lastName);
-        Spliterator<Message> spliterator = messageRepo.findAll().spliterator();
-        return StreamSupport.stream(spliterator, false)
-                .filter(m -> m.getToUser().contains(user))
-                .collect(Collectors.toList());
+        User user = getUser(firstName, lastName); //todo
+        return ((MessageDbRepo)messageRepo).getReceivedMessagesIDs(user.getId());
     }
 
     private int page = 0;
@@ -452,8 +447,6 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
                 .filter(m->m.getFromUser().equals(from))
                 .toList();
     }
-
-
 
     @Override
     public void addObserver(Observer<UserFriendChangeEvent> e) {

@@ -229,4 +229,26 @@ public class UserDbRepo implements Repository<Long, User> {
         }
         return null;
     }
+
+    public Long findUserID(String firstName, String lastName){
+        if(firstName == null || lastName == null){
+            throw new IllegalArgumentException("Invalid user names!");
+        }
+        try (Connection connection = DriverManager.getConnection(url,username,password);
+             PreparedStatement ps = connection.prepareStatement("SELECT id FROM users WHERE first_name = (?) AND last_name = (?)"))
+        {
+            ps.setString(1, firstName);
+            ps.setString(2, lastName);
+            ResultSet resultSet = ps.executeQuery();
+            if(resultSet.next()){
+                return resultSet.getLong("id");
+            }
+            else{
+                return null;
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
