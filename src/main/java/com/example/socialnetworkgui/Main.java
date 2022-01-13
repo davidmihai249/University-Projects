@@ -46,8 +46,20 @@ public class Main {
                 "postgres",
                 "834617"
         );
+        Repository<Long,Event> eventRepository = new EventDBRepository(
+                "jdbc:postgresql://localhost:5432/SocialNetwork",
+                "postgres",
+                "834617",
+                (UserDbRepo) userRepo
+        );
+        Repository<Tuple<Long>,Participant> participantRepository = new ParticipantDBRepository(
+                "jdbc:postgresql://localhost:5432/SocialNetwork",
+                "postgres",
+                "834617"
+        );
 
-        UserFriendshipDbService srv = new UserFriendshipDbService(userRepo, friendshipRepo, requestRepo, messageRepo,chatRepository);
+
+        UserFriendshipDbService srv = new UserFriendshipDbService(userRepo, friendshipRepo, requestRepo, messageRepo,chatRepository,eventRepository,participantRepository);
 
         ConsoleInterface ui = new ConsoleInterface(srv);
         ui.run();

@@ -61,7 +61,7 @@ public class ChatDBRepo implements Repository<Long, Chat> {
             PreparedStatement ps = connection.prepareStatement(sql) )
         {
             ps.setString(1, entity.getChatName());
-            String result = null;
+            String result = "";
             for(Long id_user:entity.getUsers()){
                 String id_user_string = Long.toString(id_user);
                 result = result + id_user_string;

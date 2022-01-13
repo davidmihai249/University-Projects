@@ -19,7 +19,7 @@
    <BorderPane prefHeight="777.0" prefWidth="1033.0">
       <left>
          <VBox prefHeight="677.0" prefWidth="200.0" style="-fx-background-color: #8b5cd6;" BorderPane.alignment="CENTER">
-            <Label fx:id="labelLoggedUser" alignment="CENTER" prefHeight="316.0" prefWidth="200.0" text="User" textFill="WHITE">
+            <Label fx:id="labelLoggedUser" alignment="CENTER" prefHeight="320.0" prefWidth="200.0" text="User" textFill="WHITE">
                <font>
                   <Font name="SansSerif Regular" size="18.0" />
                </font>
@@ -50,6 +50,14 @@
                <font>
                   <Font name="SansSerif Regular" size="18.0" />
                </font>
+            </Button>
+            <Button fx:id="eventButton" mnemonicParsing="false" onAction="#handleEventsButton" prefHeight="96.0" prefWidth="200.0" text="Events" textFill="WHITE">
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="CALENDAR" />
+               </graphic>
             </Button>
             <Button fx:id="buttonLogOut" layoutX="10.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleLogOut" prefHeight="90.0" prefWidth="330.0" styleClass="button" stylesheets="@../styles/style.css" text="Log Out" textFill="WHITE">
                <graphic>
@@ -149,16 +157,40 @@
                   </Pane>
                </StackPane>
             </Pane>
+            <Pane fx:id="eventPane" prefHeight="677.0" prefWidth="833.0" styleClass="tablePane">
+               <children>
+                  <HBox layoutX="9.0" layoutY="36.0" prefHeight="81.0" prefWidth="815.0">
+                     <children>
+                        <Button fx:id="subscribeButton" mnemonicParsing="false" onAction="#handlenotificationonbutton" prefHeight="81.0" prefWidth="189.0" text="Subscribe" textFill="WHITE" />
+                        <Button fx:id="unsubscribeButton" mnemonicParsing="false" onAction="#handlenotificationoffbutton" prefHeight="81.0" prefWidth="193.0" text="Unsubscribe" textFill="WHITE" />
+                        <Button fx:id="participateButton" mnemonicParsing="false" onAction="#handleparticipatebutton" prefHeight="87.0" prefWidth="212.0" text="Participate event" textFill="WHITE" />
+                        <Button fx:id="unparticipateButton" mnemonicParsing="false" onAction="#handleunparticipatebutton" prefHeight="81.0" prefWidth="223.0" text="Unparticipate event" textFill="#f8f5f5" />
+                        <Button fx:id="addEventButton" mnemonicParsing="false" onAction="#handleAddEventButton" prefHeight="81.0" prefWidth="168.0" text="Add New Event" textFill="WHITE" />
+                     </children>
+                  </HBox>
+                  <TableView fx:id="eventTable" layoutX="14.0" layoutY="165.0" prefHeight="504.0" prefWidth="810.0">
+                    <columns>
+                      <TableColumn fx:id="nameColumn" prefWidth="116.0" text="Name" />
+                      <TableColumn fx:id="startDateColumn" prefWidth="87.0" text="Start Date" />
+                        <TableColumn fx:id="endDateColumn" prefWidth="102.0" text="End Date" />
+                        <TableColumn fx:id="descriptionColumn" prefWidth="119.0" text="Description" />
+                        <TableColumn fx:id="locationColumn" prefWidth="136.0" text="Location" />
+                        <TableColumn fx:id="categoryColumn" prefWidth="143.0" text="Category" />
+                        <TableColumn fx:id="organizerColumn" prefWidth="106.0" text="Organizer" />
+                    </columns>
+                  </TableView>
+               </children>
+            </Pane>
             <Pane fx:id="paneMessages" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
-               <TableView fx:id="tableChatFriends" layoutX="14.0" layoutY="10.0" onMouseClicked="#setListChat" prefHeight="586.0" prefWidth="215.0">
+               <TableView fx:id="tableChatFriends" layoutX="14.0" layoutY="14.0" onMouseClicked="#setListChat" prefHeight="586.0" prefWidth="215.0">
                   <columns>
                      <TableColumn fx:id="chatColumn" maxWidth="215.0" prefWidth="215.0" text="Chats" />
                   </columns>
                </TableView>
-               <ListView fx:id="listViewConversation" layoutX="246.0" layoutY="14.0" prefHeight="583.0" prefWidth="577.0" />
+               <ListView fx:id="listViewConversation" layoutX="246.0" layoutY="15.0" prefHeight="583.0" prefWidth="577.0" />
                <TextField fx:id="textFieldMessage" layoutX="246.0" layoutY="611.0" prefHeight="22.0" prefWidth="499.0" promptText="Type you message here" />
                <Button fx:id="buttonSendMessage" layoutX="754.0" layoutY="611.0" mnemonicParsing="false" onMouseClicked="#sendMessage" text="Send" textFill="WHITE" />
-               <Button layoutX="14.0" layoutY="611.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="215.0" text="Add New Chat" textFill="WHITE" />
+               <Button fx:id="addChatButton" onAction="#handleAddChatButton" layoutX="14.0" layoutY="611.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="215.0" text="Add New Chat" textFill="WHITE" />
             </Pane>
          </StackPane>
       </center>
