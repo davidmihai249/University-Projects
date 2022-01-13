@@ -18,6 +18,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -31,7 +33,6 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.controlsfx.control.Notifications;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +55,12 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     Stage accountStage;
     @FXML
     AnchorPane anchorPane;
-
+    @FXML
+    Button buttonProfilePage;
+    @FXML
+    Label labelLoggedUser;
+    @FXML
+    Label labelProfile;
     @FXML
     TableView<FriendDTO> tableFriends;
     @FXML
@@ -106,8 +112,6 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     Button buttonUnsend;
     @FXML
-    Label labelLoggedUser;
-    @FXML
     Button buttonFriends;
     @FXML
     Button buttonRequests;
@@ -121,6 +125,8 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     Button buttonLogOut;
     @FXML
     StackPane stackPane;
+    @FXML
+    Pane paneProfile;
     @FXML
     Pane paneFriends;
     @FXML
@@ -184,7 +190,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     //Statistics
     @FXML
-    Pane statisticsPane;
+    Pane paneStatistics;
     @FXML
     DatePicker startDateStatistics;
     @FXML
@@ -201,8 +207,12 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     public void setUp(Page page, Stage stage, AnchorPane pane){
         mainPage = page;
-        labelLoggedUser.setText(mainPage.getFirstName() + " " + mainPage.getLastName());
         service = page.getService();
+        labelLoggedUser.setText(mainPage.getFirstName() + " " + mainPage.getLastName());
+        labelProfile.setText(labelProfile.getText() + " " + labelLoggedUser.getText());
+        File imageFile = new File("Images/profile_clown_small.png");
+        Image image = new Image(imageFile.toURI().toString());
+        buttonProfilePage.setGraphic(new ImageView(image));
         service.addObserver(this);
         service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.ALL,null));
         accountStage = stage;
@@ -328,7 +338,10 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 initModelFriend();
                 initModelReceivedRequest();
                 initModelSentRequest();
-                initModelEvents(service.getEventsOnPage(0));
+                Iterable<Event> eventSet = service.getEventsOnPage(0);
+                initModelEvents(eventSet);
+                List<Event> eventsList = service.getAllEvents();
+                sendNotifications(eventsList);
             }
         }
     }
@@ -356,7 +369,6 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     private void initModelEvents(Iterable<Event> events){
         List<Event> eventsList = StreamSupport.stream(events.spliterator(),false).toList();
         modelEvents.setAll(eventsList);
-        sendNotifications(eventsList);
     }
 
     public void handlePreviousPageButton() {
@@ -795,7 +807,6 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             List<Message> listOfMessages = mainPage.getService().getMessageStatistics(mainPage.getUser(), startDate, endDate);
             List<Friendship> listOfFriendships = mainPage.getService().getFriendsStatistics(mainPage.getUser(), startDate, endDate);
             float fontSize = 14;
-            float fontHeight = fontSize;
             float leading = 20;
 
             fileChooser.setTitle("Save pdf");
@@ -818,11 +829,11 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
             contentStream.beginText();
             contentStream.newLineAtOffset(startX, yCoordinate);
-            yCoordinate -= fontHeight;
+            yCoordinate -= fontSize;
             contentStream.newLineAtOffset(0, -leading);
             yCoordinate -= leading;
             contentStream.showText(startDateStatistics.getValue().toString() + " " + endDateStatistics.getValue().toString());
-            yCoordinate -= fontHeight;
+            yCoordinate -= fontSize;
             contentStream.endText();
 
             contentStream.moveTo(startX, yCoordinate);
@@ -831,7 +842,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             yCoordinate -= leading;
 
             for (Message message : listOfMessages) {
-                if (yCoordinate - fontHeight < 50) {
+                if (yCoordinate - fontSize < 50) {
                     PDPage anotherPage = new PDPage();
                     contentStream.close();
                     document.addPage(anotherPage);
@@ -842,7 +853,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 contentStream.beginText();
                 contentStream.newLineAtOffset(startX, yCoordinate);
                 contentStream.showText(message.getMessage() + ": From " + message.getFromUser().getFirstName() + " " + message.getFromUser().getLastName());
-                yCoordinate -= fontHeight;
+                yCoordinate -= fontSize;
                 contentStream.endText();
             }
 
@@ -857,7 +868,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             contentStream.beginText();
             contentStream.newLineAtOffset(startX, yCoordinate);
             contentStream.showText("All the activities of " + mainPage.getFirstName() + " " + mainPage.getLastName());
-            yCoordinate -= fontHeight;
+            yCoordinate -= fontSize;
             contentStream.endText();
 
             contentStream.moveTo(startX, yCoordinate);
@@ -866,7 +877,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             yCoordinate -= leading;
 
             for (Friendship friendship : listOfFriendships) {
-                if (yCoordinate - fontHeight < 50) {
+                if (yCoordinate - fontSize < 50) {
                     PDPage anotherPage = new PDPage();
                     contentStream.close();
                     document.addPage(anotherPage);
@@ -877,7 +888,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 contentStream.beginText();
                 contentStream.newLineAtOffset(startX, yCoordinate);
                 contentStream.showText(mainPage.getService().getUserRepo().findOne(friendship.getId().getLeft()).getFirstName() + " " + mainPage.getService().getUserRepo().findOne(friendship.getId().getLeft()).getLastName() + " became friend with " + mainPage.getService().getUserRepo().findOne(friendship.getId().getRight()).getFirstName() + " " + mainPage.getService().getUserRepo().findOne(friendship.getId().getRight()).getLastName() + " on " + friendship.getDate().toString());
-                yCoordinate -= fontHeight;
+                yCoordinate -= fontSize;
                 contentStream.endText();
             }
             contentStream.close();
@@ -899,7 +910,6 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         if(firstName!=null && lastName!=null && startDate!=null && endDate!=null) {
             List<Message> listOfMessages = mainPage.getService().getMessageStatistics2(user, mainPage.getUser(), startDate, endDate);
             float fontSize = 14;
-            float fontHeight = fontSize;
             float leading = 20;
 
             fileChooser.setTitle("Save pdf");
@@ -922,11 +932,11 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
             contentStream.beginText();
             contentStream.newLineAtOffset(startX, yCoordinate);
-            yCoordinate -= fontHeight;
+            yCoordinate -= fontSize;
             contentStream.newLineAtOffset(0, -leading);
             yCoordinate -= leading;
             contentStream.showText("Messages from " + user.getFirstName() + " " + user.getLastName() + " to " + mainPage.getFirstName() + " " + mainPage.getLastName());
-            yCoordinate -= fontHeight;
+            yCoordinate -= fontSize;
             contentStream.endText();
 
             contentStream.moveTo(startX, yCoordinate);
@@ -935,7 +945,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             yCoordinate -= leading;
 
             for (Message message : listOfMessages) {
-                if (yCoordinate - fontHeight < 50) {
+                if (yCoordinate - fontSize < 50) {
                     PDPage anotherPage = new PDPage();
                     contentStream.close();
                     document.addPage(anotherPage);
@@ -946,7 +956,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 contentStream.beginText();
                 contentStream.newLineAtOffset(startX, yCoordinate);
                 contentStream.showText(message.getMessage() + ": From " + message.getFromUser().getFirstName() + " " + message.getFromUser().getLastName());
-                yCoordinate -= fontHeight;
+                yCoordinate -= fontSize;
                 contentStream.endText();
             }
 
@@ -971,11 +981,15 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     @FXML
     public void handleStatisticsButton(){
-        statisticsPane.toFront();
+        paneStatistics.toFront();
     }
 
     @FXML
     public void handleLogOut(){
         accountStage.close();
+    }
+
+    public void handleProfileButton() {
+        paneProfile.toFront();
     }
 }

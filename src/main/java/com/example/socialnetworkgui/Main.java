@@ -7,6 +7,7 @@ import com.example.socialnetworkgui.domain.validators.RequestValidator;
 import com.example.socialnetworkgui.domain.validators.UserValidator;
 import com.example.socialnetworkgui.repository.Repository;
 import com.example.socialnetworkgui.repository.db.*;
+import com.example.socialnetworkgui.repository.paging.PagingRepository;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
 import com.example.socialnetworkgui.ui.ConsoleInterface;
 
@@ -19,7 +20,7 @@ public class Main {
         //Repository<Tuple<Long>, Friendship> friendshipRepo = new FriendshipFile("data/friendship.in", new FriendshipValidator());
         //UserFriendshipService srv = new UserFriendshipService(userRepo, friendshipRepo);
 
-        Repository<Long, User> userRepo = new UserDbRepo(
+        UserDbRepo userRepo = new UserDbRepo(
                 "jdbc:postgresql://localhost:5432/SocialNetwork",
                 "postgres",
                 "834617",
@@ -46,11 +47,11 @@ public class Main {
                 "postgres",
                 "834617"
         );
-        Repository<Long,Event> eventRepository = new EventDBRepository(
+        PagingRepository<Long,Event> eventRepository = new EventDBRepository(
                 "jdbc:postgresql://localhost:5432/SocialNetwork",
                 "postgres",
                 "834617",
-                (UserDbRepo) userRepo
+                userRepo
         );
         Repository<Tuple<Long>,Participant> participantRepository = new ParticipantDBRepository(
                 "jdbc:postgresql://localhost:5432/SocialNetwork",

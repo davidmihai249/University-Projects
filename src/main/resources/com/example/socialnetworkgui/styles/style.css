@@ -11,6 +11,18 @@
     -fx-background-color: #5E60CE;
 }
 
+#buttonProfilePage{
+    -fx-background-color: #8b5cd6;
+}
+
+#buttonProfilePage:hover{
+    -fx-background-color: #6930C3;
+}
+
+.profileLabel{
+    -fx-background-color: #4ea8de;
+}
+
 #buttonApprove:hover {
     -fx-background-color: #33cc33;
     -fx-text-fill: black;
@@ -30,7 +42,8 @@
 }
 
 #topHBox {
-    -fx-background-color: linear-gradient(to bottom right, #7400B8, #5E60CE);
+    /*-fx-background-color: linear-gradient(to bottom right, #7400B8, #5E60CE);*/
+    -fx-background-color: linear-gradient(to bottom right, #7400B8, #4ea8de);
 }
 
 #mainButton {
