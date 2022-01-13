@@ -2,18 +2,21 @@ package com.example.socialnetworkgui.repository.db;
 
 import com.example.socialnetworkgui.domain.Event;
 import com.example.socialnetworkgui.domain.User;
-import com.example.socialnetworkgui.repository.Repository;
+import com.example.socialnetworkgui.repository.paging.Page;
+import com.example.socialnetworkgui.repository.paging.Pageable;
+import com.example.socialnetworkgui.repository.paging.Paginator;
+import com.example.socialnetworkgui.repository.paging.PagingRepository;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EventDBRepository implements Repository<Long, Event> {
-    private String url;
-    private String username;
-    private String password;
-    private UserDbRepo userDbRepo;
+public class EventDBRepository implements PagingRepository<Long, Event> {
+    private final String url;
+    private final String username;
+    private final String password;
+    private final UserDbRepo userDbRepo;
 
     public EventDBRepository(String url, String username, String password, UserDbRepo userDbRepo){
         this.url = url;
@@ -118,5 +121,11 @@ public class EventDBRepository implements Repository<Long, Event> {
         Event event = new Event(name, startDate, endDate, description, location, category, organizer);
         event.setId(eventID);
         return event;
+    }
+
+    @Override
+    public Page<Event> findAll(Pageable pageable) {
+        Paginator<Event> paginator = new Paginator<>(pageable, this.findAll());
+        return paginator.paginate();
     }
 }

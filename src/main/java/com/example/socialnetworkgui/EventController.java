@@ -1,12 +1,11 @@
 package com.example.socialnetworkgui;
 
-import com.example.socialnetworkgui.MessageAlert;
 import com.example.socialnetworkgui.domain.Event;
 import com.example.socialnetworkgui.domain.User;
 import com.example.socialnetworkgui.domain.validators.ValidationException;
-import com.example.socialnetworkgui.domain.validators.Validator;
-import com.example.socialnetworkgui.domain.validators.ValidatorEvent;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
+import com.example.socialnetworkgui.utils.events.ChangeEventType;
+import com.example.socialnetworkgui.utils.events.UserFriendChangeEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -17,7 +16,6 @@ import javafx.stage.Stage;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 
 public class EventController {
     @FXML
@@ -63,6 +61,7 @@ public class EventController {
             service.addParticipant(newEvent,loggedUser);
             addEventStage.close();
             MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Information", "Event created successfully!");
+            service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.EVENTS,null));
         }
         catch (IllegalArgumentException | ValidationException e){
             addEventStage.close();

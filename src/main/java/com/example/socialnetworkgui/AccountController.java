@@ -18,8 +18,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -28,16 +26,16 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.controlsfx.control.Notifications;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.StreamSupport;
 
 public class AccountController implements Observer<UserFriendChangeEvent> {
@@ -124,7 +122,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     //Event
     @FXML
-    Pane eventPane;
+    Pane paneEvents;
     @FXML
     Button subscribeButton;
     @FXML
@@ -152,7 +150,11 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     TableColumn<Event,String> organizerColumn;
     @FXML
-    private ObservableList<Event> modelEvents = FXCollections.observableArrayList();
+    Button buttonPreviousPage;
+    @FXML
+    Button buttonNextPage;
+    @FXML
+    ObservableList<Event> modelEvents = FXCollections.observableArrayList();
 
     //Chat
     @FXML
@@ -166,9 +168,9 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     private TextField textFieldMessage;
     @FXML
-    private ObservableList<Message> modelMessages = FXCollections.observableArrayList();
+    ObservableList<Message> modelMessages = FXCollections.observableArrayList();
     @FXML
-    private ObservableList<Chat> modelChat = FXCollections.observableArrayList();
+    ObservableList<Chat> modelChat = FXCollections.observableArrayList();
     @FXML
     Chat selectedChat;
 
@@ -285,39 +287,61 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 initModelChat();
                 initModelChatsList();
             }
+            case REGISTRATION: {
+
+            }
+            case EVENTS: {
+                initModelEvents(service.getEventsOnPage(0));
+            }
+            case CHAT: {
+                initModelChatsList();
+            }
             case ALL: {
                 initModelChatsList();
                 initModelChat();
                 initModelFriend();
                 initModelReceivedRequest();
                 initModelSentRequest();
-                initModelEvents();
-            }
-            case REGISTRATION: {
-
+                initModelEvents(service.getEventsOnPage(0));
             }
         }
     }
 
-    private void initModelEvents(){
-        Iterable<Event> events = service.getAllEvents();
+    private void sendNotifications(List<Event> eventsList){
+        //File imageFile = new File("Images/happy_clown_transparent.png");
+        //Image image = new Image(imageFile.toURI().toString());
+        eventsList.stream()
+                .filter(event -> service.getParticipantRepo().findOne(new Tuple<>(event.getId(), mainPage.getUser().getId())) != null || (event.getOrganizer().getFirstName().equals(mainPage.getFirstName()) && event.getOrganizer().getLastName().equals(mainPage.getLastName()))).forEach(event -> {
+                    long days = ChronoUnit.DAYS.between(LocalDateTime.now(), event.getStartDate());
+                    String daysLeft = String.valueOf(days);
+                    Notifications notificationsBuilder = Notifications.create()
+                            //.graphic(new ImageView(image))
+                            .title("New upcoming event!")
+                            .text(event.getName() + " it's happening in " + daysLeft + " days!")
+                            .hideAfter(Duration.seconds(20))
+                            .position(Pos.BOTTOM_RIGHT);
+                    notificationsBuilder.darkStyle();
+                    notificationsBuilder.show();
+                });
+    }
+
+    private void initModelEvents(Iterable<Event> events){
         List<Event> eventsList = StreamSupport.stream(events.spliterator(),false).toList();
         modelEvents.setAll(eventsList);
-        for(Event event:eventsList){
-            if(service.getParticipantRepo().findOne(new Tuple<>(event.getId(),mainPage.getUser().getId()))!=null || (event.getOrganizer().getFirstName().equals(mainPage.getFirstName()) && event.getOrganizer().getLastName().equals(mainPage.getLastName()))){
-                long days = ChronoUnit.DAYS.between(LocalDateTime.now(),event.getStartDate());
-                String daysleft = String.valueOf(days);
-                //File imageFile = new File("Images/happy_clown_transparent.png");
-                //Image image = new Image(imageFile.toURI().toString());
-                Notifications notificationsBuilder = Notifications.create()
-                        //.graphic(new ImageView(image))
-                        .title("New upcoming event!")
-                        .text(event.getName() + " it's happening in " + daysleft + " days!")
-                        .hideAfter(Duration.seconds(20))
-                        .position(Pos.BOTTOM_RIGHT);
-                notificationsBuilder.darkStyle();
-                notificationsBuilder.show();
-            }
+        sendNotifications(eventsList);
+    }
+
+    public void handlePreviousPageButton() {
+        Set<Event> events = service.getPreviousEvents();
+        if(events != null && !events.isEmpty()){
+            initModelEvents(events);
+        }
+    }
+
+    public void handleNextPageButton() {
+        Set<Event> events = service.getNextEvents();
+        if(events != null && !events.isEmpty()){
+            initModelEvents(events);
         }
     }
 
@@ -425,71 +449,77 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         }
     }
 
-    public void sendMessage() {
-        Message msg = listViewConversation.getSelectionModel().getSelectedItem();
-        if(msg == null) {
-            String messageText = textFieldMessage.getText();
-            List<Tuple<String>> toUsers = new ArrayList<>();
-            if (selectedChat.getUsers().size() == 2) {
-                User firstUser = service.getUserRepo().findOne(selectedChat.getUsers().get(0));
-                User secondUser = service.getUserRepo().findOne(selectedChat.getUsers().get(1));
-                List<User> toUser = new ArrayList<>();
-                textFieldMessage.clear();
-                if (firstUser.getFirstName().equals(mainPage.getFirstName()) && firstUser.getLastName().equals(mainPage.getLastName())) {
-                    toUsers.add(new Tuple<>(secondUser.getFirstName(), secondUser.getLastName()));
-                    toUser.add(secondUser);
-                } else {
-                    toUsers.add(new Tuple<>(firstUser.getFirstName(), firstUser.getLastName()));
-                    toUser.add(firstUser);
-                }
-                service.sendMessage(mainPage.getFirstName(), mainPage.getLastName(), toUsers, messageText, null);
-                modelMessages.add(new Message(mainPage.getUser(), toUser, messageText, LocalDateTime.now(), null));
-            } else {
-                List<User> toUser = new ArrayList<>();
-                for (Long id : selectedChat.getUsers()) {
-                    if (!Objects.equals(mainPage.getUser().getId(), id)) {
-                        User user = service.getUserRepo().findOne(id);
-                        toUsers.add(new Tuple<>(user.getFirstName(), user.getLastName()));
-                        toUser.add(user);
-                    }
-                }
-                service.sendMessage(mainPage.getFirstName(), mainPage.getLastName(), toUsers, messageText, null);
-                textFieldMessage.clear();
-                modelMessages.add(new Message(mainPage.getUser(), toUser, messageText, LocalDateTime.now(), null));
-            }
+    private List<Tuple<String>> getToUserNames(User firstUser, User secondUser){
+        List<Tuple<String>> toUserNames = new ArrayList<>();
+        if(firstUser.getFirstName().equals(mainPage.getFirstName()) && firstUser.getLastName().equals(mainPage.getLastName())) {
+            toUserNames.add(new Tuple<>(secondUser.getFirstName(), secondUser.getLastName()));
         }
         else{
-            String messageText = textFieldMessage.getText();
-            List<Tuple<String>> toUsers = new ArrayList<>();
-            if(selectedChat.getUsers().size() == 2){
-                User firstUser = service.getUserRepo().findOne(selectedChat.getUsers().get(0));
-                User secondUser = service.getUserRepo().findOne(selectedChat.getUsers().get(1));
-                List<User> toUser = new ArrayList<>();
-                textFieldMessage.clear();
-                if(firstUser.getFirstName().equals(mainPage.getFirstName()) && firstUser.getLastName().equals(mainPage.getLastName())){
-                    toUsers.add(new Tuple<>(secondUser.getFirstName(),secondUser.getLastName()));
-                    toUser.add(secondUser);
-                }
-                else{
-                    toUsers.add(new Tuple<>(firstUser.getFirstName(),firstUser.getLastName()));
-                    toUser.add(firstUser);
-                }
-                service.sendMessage(mainPage.getFirstName(), mainPage.getLastName(), toUsers, messageText, null);
-                modelMessages.add(new Message(mainPage.getUser(),toUser,messageText, LocalDateTime.now(),null));
+            toUserNames.add(new Tuple<>(firstUser.getFirstName(), firstUser.getLastName()));
+        }
+        return toUserNames;
+    }
+
+    private List<Tuple<String>> getToUserNames(List<Long> usersIDs){
+        List<Tuple<String>> toUserNames = new ArrayList<>();
+        for (Long id : usersIDs) {
+            if (!Objects.equals(mainPage.getUser().getId(), id)) {
+                User user = service.getUserRepo().findOne(id);
+                toUserNames.add(new Tuple<>(user.getFirstName(), user.getLastName()));
             }
-            else{
-                List<User> toUser = new ArrayList<>();
-                for(Long id:selectedChat.getUsers()){
-                    if(!Objects.equals(mainPage.getUser().getId(), id)) {
-                        User user = service.getUserRepo().findOne(id);
-                        toUsers.add(new Tuple<>(user.getFirstName(), user.getLastName()));
-                        toUser.add(user);
-                    }
-                }
-                service.sendMessage(mainPage.getFirstName(),mainPage.getLastName(),toUsers,messageText,null);
-                textFieldMessage.clear();
-                modelMessages.add(new Message(mainPage.getUser(),toUser,messageText,LocalDateTime.now(),null));
+        }
+        return toUserNames;
+    }
+
+    private List<User> getToUserList(User firstUser, User secondUser){
+        List<User> toUserList = new ArrayList<>();
+        if(firstUser.getFirstName().equals(mainPage.getFirstName()) && firstUser.getLastName().equals(mainPage.getLastName())) {
+            toUserList.add(secondUser);
+        }else {
+            toUserList.add(firstUser);
+        }
+        return toUserList;
+    }
+
+    private List<User> getToUserList(List<Long> usersIDs){
+        List<User> toUserList = new ArrayList<>();
+        for (Long id : usersIDs) {
+            if (!Objects.equals(mainPage.getUser().getId(), id)) {
+                User user = service.getUserRepo().findOne(id);
+                toUserList.add(user);
             }
+        }
+        return toUserList;
+    }
+
+    private void sendMessage(Message selectedMessage, String messageText, List<Tuple<String>> toUserNames, List<User> toUserList) {
+        if(selectedMessage == null){
+            service.sendMessage(mainPage.getFirstName(), mainPage.getLastName(), toUserNames, messageText, null);
+            modelMessages.add(new Message(mainPage.getUser(), toUserList, messageText, LocalDateTime.now(), null));
+        }
+        else{
+            service.sendMessage(mainPage.getFirstName(), mainPage.getLastName(), toUserNames, messageText, selectedMessage);
+            modelMessages.add(new Message(mainPage.getUser(),toUserList,messageText, LocalDateTime.now(),selectedMessage));
+        }
+    }
+
+    @FXML
+    public void handleSendButton() {
+        Message selectedMessage = listViewConversation.getSelectionModel().getSelectedItem();
+        String messageText = textFieldMessage.getText();
+        if(selectedChat.getUsers().size() == 2){
+            User firstUser = service.getUserRepo().findOne(selectedChat.getUsers().get(0));
+            User secondUser = service.getUserRepo().findOne(selectedChat.getUsers().get(1));
+            textFieldMessage.clear();
+            List<Tuple<String>> toUserNames = getToUserNames(firstUser,secondUser);
+            List<User> toUserList = getToUserList(firstUser,secondUser);
+            sendMessage(selectedMessage, messageText, toUserNames, toUserList);
+        }
+        else{
+            List<Tuple<String>> toUserNames = getToUserNames(selectedChat.getUsers());
+            List<User> toUserList = getToUserList(selectedChat.getUsers());
+            sendMessage(selectedMessage, messageText, toUserNames, toUserList);
+            textFieldMessage.clear();
         }
         service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.MESSAGE, null));
         listViewConversation.getSelectionModel().clearSelection();
@@ -622,86 +652,70 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     @FXML
-    public void handlenotificationonbutton(){
-        Event selectedevent = eventTable.getSelectionModel().getSelectedItem();
-        if(selectedevent==null){
+    public void handleNotificationOnButton(){
+        Event selectedEvent = eventTable.getSelectionModel().getSelectedItem();
+        if(selectedEvent == null){
             MessageAlert.showErrorMessage(null, "No event has been selected");
         }
         else {
-            if (selectedevent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedevent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
+            if (selectedEvent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedEvent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
                 MessageAlert.showErrorMessage(null, "You're the host, you can't turn on the notifications!");
             } else {
-                if (selectedevent == null) {
-                    MessageAlert.showErrorMessage(null, "No event selected!");
-                } else {
-                    service.notificationson(selectedevent, mainPage.getUser());
-                    eventTable.getSelectionModel().clearSelection();
-                }
+                service.notificationsOn(selectedEvent, mainPage.getUser());
+                eventTable.getSelectionModel().clearSelection();
             }
         }
     }
 
     @FXML
-    public void handlenotificationoffbutton(){
-        Event selectedevent = eventTable.getSelectionModel().getSelectedItem();
-        if(selectedevent==null){
+    public void handleNotificationOffButton(){
+        Event selectedEvent = eventTable.getSelectionModel().getSelectedItem();
+        if(selectedEvent == null){
             MessageAlert.showErrorMessage(null, "No event has been selected");
         }
         else {
-            if (selectedevent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedevent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
+            if (selectedEvent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedEvent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
                 MessageAlert.showErrorMessage(null, "You're the host, you can't turn off the notifications!");
             } else {
-                if (selectedevent == null) {
-                    MessageAlert.showErrorMessage(null, "No event selected!");
-                } else {
-                    service.notificationsoff(selectedevent, mainPage.getUser());
-                    eventTable.getSelectionModel().clearSelection();
-                }
+                service.notificationsOff(selectedEvent, mainPage.getUser());
+                eventTable.getSelectionModel().clearSelection();
             }
         }
     }
 
     @FXML
-    public void handleparticipatebutton(){
-        Event selectedevent = eventTable.getSelectionModel().getSelectedItem();
-        if(selectedevent==null){
-            MessageAlert.showErrorMessage(null, "No event has been selected");
+    public void handleParticipateButton(){
+        Event selectedEvent = eventTable.getSelectionModel().getSelectedItem();
+        if(selectedEvent == null){
+            MessageAlert.showErrorMessage(null, "No event has been selected!");
         }
         else {
-            if (selectedevent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedevent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
+            if (selectedEvent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedEvent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
                 MessageAlert.showErrorMessage(null, "You're the host of the event, you can't do that!");
             } else {
-                if (selectedevent == null) {
-                    MessageAlert.showErrorMessage(null, "No event selected!");
-                } else {
-                    service.addParticipant(selectedevent, mainPage.getUser());
-                    eventTable.getSelectionModel().clearSelection();
-                }
+                service.addParticipant(selectedEvent, mainPage.getUser());
+                eventTable.getSelectionModel().clearSelection();
             }
             eventTable.getItems().clear();
-            initModelEvents();
+            initModelEvents(service.getEventsOnPage(0));
         }
     }
 
     @FXML
-    public void handleunparticipatebutton(){
-        Event selectedevent = eventTable.getSelectionModel().getSelectedItem();
-        if(selectedevent==null){
+    public void handleUnparticipateButton(){
+        Event selectedEvent = eventTable.getSelectionModel().getSelectedItem();
+        if(selectedEvent == null){
             MessageAlert.showErrorMessage(null, "No event has been selected");
         }
         else {
-            if (selectedevent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedevent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
+            if (selectedEvent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedEvent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
                 MessageAlert.showErrorMessage(null, "You're the host of the event, you can't do that!");
             } else {
-                if (selectedevent == null) {
-                    MessageAlert.showErrorMessage(null, "No event selected!");
-                } else {
-                    service.removeParticipant(selectedevent, mainPage.getUser());
-                    eventTable.getSelectionModel().clearSelection();
-                }
+                service.removeParticipant(selectedEvent, mainPage.getUser());
+                eventTable.getSelectionModel().clearSelection();
             }
             eventTable.getItems().clear();
-            initModelEvents();
+            initModelEvents(service.getEventsOnPage(0));
         }
     }
 
@@ -748,13 +762,11 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     public void handleMessagesButton() {
         paneMessages.toFront();
-        initModelChatsList();
-        initModelChat();
     }
 
     @FXML
     public void handleEventsButton(){
-        eventPane.toFront();
+        paneEvents.toFront();
     }
 
     @FXML

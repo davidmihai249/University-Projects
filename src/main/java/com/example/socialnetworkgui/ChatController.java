@@ -1,10 +1,10 @@
 package com.example.socialnetworkgui;
 
-import com.example.socialnetworkgui.MessageAlert;
 import com.example.socialnetworkgui.domain.Chat;
 import com.example.socialnetworkgui.domain.User;
 import com.example.socialnetworkgui.domain.validators.ValidationException;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
+import com.example.socialnetworkgui.utils.events.ChangeEventType;
 import com.example.socialnetworkgui.utils.events.UserFriendChangeEvent;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -27,20 +27,19 @@ public class ChatController {
     @FXML
     Button addButton;
     @FXML
-    private ObservableList<User> model = FXCollections.observableArrayList();
+    ObservableList<User> model = FXCollections.observableArrayList();
 
     @FXML
     private void initialize(){
         friendsListView.setItems(model);
-        friendsListView.setCellFactory(u->new ListCell<User>(){
+        friendsListView.setCellFactory(u-> new ListCell<>() {
             @Override
-            protected void updateItem(User item,boolean empty){
+            protected void updateItem(User item, boolean empty) {
                 super.updateItem(item, empty);
-                if(empty){
+                if (empty) {
                     setText(null);
-                }
-                else{
-                    if(!item.getFirstName().equals(loggedUser.getFirstName()) && !item.getLastName().equals(loggedUser.getLastName())){
+                } else {
+                    if (!item.getFirstName().equals(loggedUser.getFirstName()) && !item.getLastName().equals(loggedUser.getLastName())) {
                         setText(item.getFirstName() + " " + item.getLastName());
                     }
                 }
@@ -87,6 +86,7 @@ public class ChatController {
             service.addChat(newChat);
             addchatStage.close();
             MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Information", "Chat created successfully!");
+            service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.CHAT,null));
         }
         catch (IllegalArgumentException | ValidationException e){
             addchatStage.close();

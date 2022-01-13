@@ -7,15 +7,15 @@ import com.example.socialnetworkgui.domain.validators.RequestValidator;
 import com.example.socialnetworkgui.domain.validators.UserValidator;
 import com.example.socialnetworkgui.repository.Repository;
 import com.example.socialnetworkgui.repository.db.*;
+import com.example.socialnetworkgui.repository.paging.PagingRepository;
 import com.example.socialnetworkgui.service.UserFriendshipDbService;
-import com.example.socialnetworkgui.config.ApplicationContext;
-import com.example.socialnetworkgui.utils.security.PasswordHashing;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
 import java.io.IOException;
 
 public class StartApplication extends Application {
@@ -41,19 +41,16 @@ public class StartApplication extends Application {
 
         String url = "jdbc:postgresql://localhost:5432/SocialNetwork";
         String username = "postgres";
-        String password = "834617";
+        String password = "Pikamar77";
 
-        //String pass = PasswordHashing.hashPassword("hatz");
-        //String pass2 = PasswordHashing.hashPassword("1234");
-
-        Repository<Long, User> userRepo = new UserDbRepo(url, username, password, new UserValidator());
+        UserDbRepo userRepo = new UserDbRepo(url, username, password, new UserValidator());
         Repository<Tuple<Long>, Friendship> friendshipRepo = new FriendshipDbRepo(url, username, password, new FriendshipValidator());
         Repository<Tuple<Long>, FriendRequest> requestRepo = new RequestDbRepo(url, username, password, new RequestValidator());
         Repository<Long, Message> messageRepo = new MessageDbRepo(url, username, password, new MessageValidator(), userRepo);
         Repository<Long,Chat> chatRepo = new ChatDBRepo(url,username,password);
-        Repository<Long,Event> eventrepo = new EventDBRepository(url,username,password, (UserDbRepo) userRepo);
+        PagingRepository<Long,Event> eventRepo = new EventDBRepository(url,username,password, userRepo);
         Repository<Tuple<Long>,Participant> participantRepo = new ParticipantDBRepository(url,username,password);
-        service = new UserFriendshipDbService(userRepo, friendshipRepo, requestRepo, messageRepo,chatRepo,eventrepo,participantRepo);
+        service = new UserFriendshipDbService(userRepo, friendshipRepo, requestRepo, messageRepo,chatRepo,eventRepo,participantRepo);
 
         launch();
     }
