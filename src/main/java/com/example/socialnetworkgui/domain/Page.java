@@ -20,6 +20,12 @@ public class Page {
         this.friendRequests = friendRequests;
     }
 
+    public Page(String firstName, String lastName, List<FriendDTO> friendsList){
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.friendsList = friendsList;
+    }
+
     public String getFirstName() {
         return firstName;
     }

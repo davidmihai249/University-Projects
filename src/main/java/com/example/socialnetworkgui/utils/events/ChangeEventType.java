@@ -9,6 +9,5 @@ public enum ChangeEventType {
     MESSAGE,
     REGISTRATION,
     EVENTS,
-    CHAT,
-    ALL
+    CHAT
 }

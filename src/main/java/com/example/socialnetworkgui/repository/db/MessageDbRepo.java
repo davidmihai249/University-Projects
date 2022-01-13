@@ -39,7 +39,7 @@ public class MessageDbRepo implements Repository<Long, Message> {
             if(resultSet.next()){
                 String messageText = resultSet.getString("message");
                 LocalDateTime dateTime = resultSet.getTimestamp("date").toLocalDateTime();
-                Message message = new Message(getSenderUser(messageID),getToUsersList(messageID),messageText,dateTime,null);
+                Message message = new Message(getSenderUser(messageID),getToUsersList(messageID),messageText,dateTime,null); //todo
                 message.setId(messageID);
                 return message;
             }
@@ -96,7 +96,7 @@ public class MessageDbRepo implements Repository<Long, Message> {
         return toUsers;
     }
 
-    public Long findreply(Long ID){
+    public Long findReply(Long ID){
         if(ID==null){
             throw new MessageException("Invalid message id!");
         }
@@ -107,8 +107,7 @@ public class MessageDbRepo implements Repository<Long, Message> {
                 ps.setLong(1, ID);
                 ResultSet resultSet = ps.executeQuery();
                 if(resultSet.next()){
-                    Long replyID = resultSet.getLong("reply_id");
-                    return replyID;
+                    return resultSet.getLong("reply_id");
                 }
             }
             catch (SQLException e){
@@ -130,7 +129,7 @@ public class MessageDbRepo implements Repository<Long, Message> {
                 String messageText = resultSet.getString("message");
                 LocalDateTime dateTime = resultSet.getTimestamp("date").toLocalDateTime();
                 List<User> toUsers = getToUsersList(messageID);
-                Long replyID = findreply(messageID);
+                Long replyID = findReply(messageID);
                 Message reply = findOne(replyID);
                 Message message = new Message(getSenderUser(messageID),toUsers,messageText,dateTime,reply);
                 message.setId(messageID);
@@ -146,7 +145,6 @@ public class MessageDbRepo implements Repository<Long, Message> {
 
     @Override
     public Message save(Message entity) {
-        // here it is not used the validator's method "validate" because the entity does not have an id yet
         validateMessage(entity);
 
         String sql = "insert into messages (message,date) values (?,?)";
@@ -220,6 +218,26 @@ public class MessageDbRepo implements Repository<Long, Message> {
             e.printStackTrace();
         }
     }
+
+    public List<Message> getReceivedMessagesIDs(Long userID){
+        List<Message> messages = new ArrayList<>();
+        try (Connection connection = DriverManager.getConnection(url,username,password);
+             PreparedStatement ps = connection.prepareStatement("SELECT message_id, reply_id FROM correspondences WHERE receiver_id = (?)"))
+        {
+            ps.setLong(1, userID);
+            ResultSet resultSet = ps.executeQuery();
+            while(resultSet.next()){
+                Long messageID = resultSet.getLong("message_id");
+                Message message = findOne(messageID); //todo
+                message.setReply(findOne(findReply(messageID)));
+                messages.add(message);
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+        return messages;
+    }
+
     @Override
     public Message delete(Long aLong) {
         return null;

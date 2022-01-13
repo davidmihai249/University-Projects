@@ -3,6 +3,7 @@ package com.example.socialnetworkgui.service;
 import com.example.socialnetworkgui.domain.User;
 import com.example.socialnetworkgui.domain.validators.FriendshipException;
 import com.example.socialnetworkgui.repository.Repository;
+import com.example.socialnetworkgui.repository.db.UserDbRepo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
@@ -64,13 +65,7 @@ public class UserService {
         if(firstName == null || lastName == null || firstName.equals("") || lastName.equals("")){
             throw new IllegalArgumentException("\nInvalid user name!");
         }
-        Iterable<User> allUsers = userRepo.findAll();
-        for (User e : allUsers) {
-            if (e.getFirstName().equals(firstName) && e.getLastName().equals(lastName)) {
-                return e.getId();
-            }
-        }
-        return null;
+        return ((UserDbRepo)userRepo).findUserID(firstName,lastName);
     }
 
     /**

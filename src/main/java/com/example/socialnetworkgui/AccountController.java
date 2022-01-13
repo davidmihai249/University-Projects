@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
 
 public class AccountController implements Observer<UserFriendChangeEvent> {
@@ -205,6 +207,12 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     Button generate2Button;
     FileChooser fileChooser = new FileChooser();
 
+    private static boolean initializedChatLists = false;
+    private static boolean initializedFriends = false;
+    private static boolean initializedReceivedRequests = false;
+    private static boolean initializedSentRequests = false;
+    private static boolean initializedEvents = false;
+
     public void setUp(Page page, Stage stage, AnchorPane pane){
         mainPage = page;
         service = page.getService();
@@ -214,7 +222,6 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         Image image = new Image(imageFile.toURI().toString());
         buttonProfilePage.setGraphic(new ImageView(image));
         service.addObserver(this);
-        service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.ALL,null));
         accountStage = stage;
         anchorPane = pane;
     }
@@ -323,25 +330,12 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 initModelChat();
                 initModelChatsList();
             }
-            case REGISTRATION: {
-
-            }
+            case REGISTRATION: { }
             case EVENTS: {
                 initModelEvents(service.getEventsOnPage(0));
             }
             case CHAT: {
                 initModelChatsList();
-            }
-            case ALL: {
-                initModelChatsList();
-                initModelChat();
-                initModelFriend();
-                initModelReceivedRequest();
-                initModelSentRequest();
-                Iterable<Event> eventSet = service.getEventsOnPage(0);
-                initModelEvents(eventSet);
-                List<Event> eventsList = service.getAllEvents();
-                sendNotifications(eventsList);
             }
         }
     }
@@ -422,12 +416,13 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     private void initModelChat() {
+        Logger logger = Logger.getLogger(AccountController.class.getName());
+        logger.log(Level.INFO, "start");
         listViewConversation.getItems().clear();
         selectedChat = tableChatFriends.getSelectionModel().selectedItemProperty().getValue();
         if(selectedChat != null) {
             List<Long> ids = new ArrayList<>(selectedChat.getUsers());
             modelMessages.addAll(service.getGroupMessages(ids));
-
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
@@ -487,6 +482,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 }
             });
         }
+        logger.log(Level.INFO, "stop");
     }
 
     private List<Tuple<String>> getToUserNames(User firstUser, User secondUser){
@@ -567,6 +563,10 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     @FXML
     public void handleFriendsButton(){
+        if(!initializedFriends){
+            initModelFriend();
+            initializedFriends = true;
+        }
         paneFriends.toFront();
     }
 
@@ -662,6 +662,10 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     @FXML
     public void handleSentReqButton() {
+        if(!initializedSentRequests){
+            initModelSentRequest();
+            initializedSentRequests = true;
+        }
         sentPane.toFront();
         sentPane.setVisible(true);
         receivedPane.setVisible(false);
@@ -669,6 +673,10 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     @FXML
     public void handleReceivedReqButton() {
+        if(!initializedReceivedRequests){
+            initModelReceivedRequest();
+            initializedReceivedRequests = true;
+        }
         receivedPane.toFront();
         receivedPane.setVisible(true);
         sentPane.setVisible(false);
@@ -893,7 +901,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             }
             contentStream.close();
             document.save(file.getAbsolutePath());
-            MessageAlert.showErrorMessage(null, "You have successfully created a pdf file with the messages and the friendships received!");
+            MessageAlert.showMessage(null, Alert.AlertType.INFORMATION,"Information","You have successfully created a pdf file with the messages and the friendships received!");
         }
         else{
             MessageAlert.showErrorMessage(null, "Some fields are empty!");
@@ -962,7 +970,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
             contentStream.close();
             document.save(file.getAbsolutePath());
-            MessageAlert.showErrorMessage(null, "You have successfully created a pdf file with the messages received!");
+            MessageAlert.showMessage(null, Alert.AlertType.INFORMATION,"Information", "You have successfully created a pdf file with the messages received!");
         }
         else{
             MessageAlert.showErrorMessage(null, "Some fields are empty!");
@@ -971,11 +979,19 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     @FXML
     public void handleMessagesButton() {
+        if(!initializedChatLists){
+            initModelChatsList();
+            initializedChatLists = true;
+        }
         paneMessages.toFront();
     }
 
     @FXML
     public void handleEventsButton(){
+        if(!initializedEvents){
+            initModelEvents(service.getEventsOnPage(0));
+            initializedEvents = true;
+        }
         paneEvents.toFront();
     }
 
