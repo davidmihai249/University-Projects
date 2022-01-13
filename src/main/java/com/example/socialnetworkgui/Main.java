@@ -59,9 +59,9 @@ public class Main {
         );
 
 
-        UserFriendshipDbService srv = new UserFriendshipDbService(userRepo, friendshipRepo, requestRepo, messageRepo,chatRepository,eventRepository,participantRepository);
+       //UserFriendshipDbService srv = new UserFriendshipDbService(userRepo, friendshipRepo, requestRepo, messageRepo,chatRepository,eventRepository,participantRepository);
 
-        ConsoleInterface ui = new ConsoleInterface(srv);
-        ui.run();
+        //ConsoleInterface ui = new ConsoleInterface(srv);
+        //ui.run();
     }
 }

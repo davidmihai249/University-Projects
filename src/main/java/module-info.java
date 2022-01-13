@@ -23,5 +23,5 @@ module main {
     exports com.example.socialnetworkgui.domain.validators;
 
     requires de.jensd.fx.glyphs.fontawesome;
-
+    requires org.apache.pdfbox;
 }

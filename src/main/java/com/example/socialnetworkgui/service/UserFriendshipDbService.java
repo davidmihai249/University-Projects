@@ -1,5 +1,6 @@
 package com.example.socialnetworkgui.service;
 
+import com.example.socialnetworkgui.MessageAlert;
 import com.example.socialnetworkgui.domain.*;
 import com.example.socialnetworkgui.domain.validators.RequestException;
 import com.example.socialnetworkgui.domain.validators.ValidationException;
@@ -15,6 +16,7 @@ import com.example.socialnetworkgui.utils.observer.Observable;
 import com.example.socialnetworkgui.utils.observer.Observer;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -417,6 +419,41 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
         Spliterator<Event> spliterator = allEvents.spliterator();
         return StreamSupport.stream(spliterator,false).toList();
     }
+
+    public List<Friendship> getFriendsStatistics(User user, LocalDate startDate,LocalDate endDate){
+        Iterable<Friendship> friendships = friendshipService.getFriendshipRepo().findAll();
+        Spliterator<Friendship> spliterator = friendships.spliterator();
+        return StreamSupport.stream(spliterator, false)
+                .filter(m -> m.getId().getLeft().equals(user.getId()) || m.getId().getRight().equals(user.getId()))
+                .filter(m -> m.getDate().isAfter(startDate) && m.getDate().isBefore(endDate))
+                .sorted(Comparator.comparing(Friendship::getDate))
+                .toList();
+    }
+
+    public List<Message> getMessageStatistics(User user,LocalDate startDate,LocalDate endDate){
+        LocalDateTime time1 = startDate.atStartOfDay();
+        LocalDateTime time2 = endDate.atStartOfDay();
+        Iterable<Message> messages = messageRepo.findAll();
+        Spliterator<Message> spliterator = messages.spliterator();
+        return StreamSupport.stream(spliterator,false)
+                .filter(m->m.getDate().isAfter(time1) && m.getDate().isBefore(time2))
+                .filter(m->m.getToUser().contains(user))
+                .toList();
+    }
+
+    public List<Message> getMessageStatistics2(User from,User user,LocalDate startDate,LocalDate endDate){
+        LocalDateTime time1 = startDate.atStartOfDay();
+        LocalDateTime time2 = endDate.atStartOfDay();
+        Iterable<Message> messages = messageRepo.findAll();
+        Spliterator<Message> spliterator = messages.spliterator();
+        return StreamSupport.stream(spliterator,false)
+                .filter(m->m.getDate().isAfter(time1) && m.getDate().isBefore(time2))
+                .filter(m->m.getToUser().contains(user))
+                .filter(m->m.getFromUser().equals(from))
+                .toList();
+    }
+
+
 
     @Override
     public void addObserver(Observer<UserFriendChangeEvent> e) {

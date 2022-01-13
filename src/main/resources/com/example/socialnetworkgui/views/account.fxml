@@ -3,6 +3,7 @@
 <?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TableColumn?>
@@ -59,6 +60,14 @@
                <graphic>
                   <FontAwesomeIconView fill="WHITE" glyphName="CALENDAR" />
                </graphic>
+            </Button>
+            <Button fx:id="statisticsButton" mnemonicParsing="false" onAction="#handleStatisticsButton" prefHeight="88.0" prefWidth="200.0" text="Statistics" textFill="WHITE">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="DATABASE" selectionFill="#e1e1e1" />
+               </graphic>
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
             </Button>
             <Button fx:id="buttonLogOut" layoutX="10.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleLogOut" prefHeight="90.0" prefWidth="330.0" styleClass="button" stylesheets="@../styles/style.css" text="Log Out" textFill="WHITE">
                <graphic>
@@ -190,10 +199,28 @@
                </TableView>
                <ButtonBar layoutX="619.0" layoutY="623.0" prefHeight="40.0" prefWidth="200.0">
                  <buttons>
-                    <Button fx:id="buttonPreviousPage" onAction="#handlePreviousPageButton" mnemonicParsing="false" text="&lt;" textFill="WHITE" />
-                    <Button fx:id="buttonNextPage" onAction="#handleNextPageButton" mnemonicParsing="false" text="&gt;" textFill="WHITE" />
+                    <Button fx:id="buttonPreviousPage" mnemonicParsing="false" onAction="#handlePreviousPageButton" text="&lt;" textFill="WHITE" />
+                    <Button fx:id="buttonNextPage" mnemonicParsing="false" onAction="#handleNextPageButton" text="&gt;" textFill="WHITE" />
                  </buttons>
                </ButtonBar>
+            </Pane>
+            <Pane fx:id="statisticsPane" prefHeight="680.0" prefWidth="835.0" styleClass="tablePane">
+               <children>
+                  <DatePicker fx:id="startDateStatistics" layoutX="33.0" layoutY="217.0" promptText="Start Date" />
+                  <DatePicker fx:id="endDateStatistics" layoutX="33.0" layoutY="314.0" promptText="End Date" />
+                  <TextField fx:id="firstNameStatistics" layoutX="31.0" layoutY="388.0" prefHeight="25.0" prefWidth="175.0" promptText="First Name" />
+                  <TextField fx:id="lastNameStatistics" layoutX="31.0" layoutY="468.0" prefHeight="25.0" prefWidth="178.0" promptText="Last Name" />
+                  <Button fx:id="generate1Button" onAction="#handlegenerate1Button" layoutX="363.0" layoutY="314.0" mnemonicParsing="false" prefHeight="33.0" prefWidth="383.0" text="Generate pdf friends and messages" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="18.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="generate2Button" onAction="#handlegenerate2Button" layoutX="363.0" layoutY="384.0" mnemonicParsing="false" prefHeight="33.0" prefWidth="383.0" text="Generate messages from a friend" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="18.0" />
+                     </font>
+                  </Button>
+               </children>
             </Pane>
          </StackPane>
       </center>

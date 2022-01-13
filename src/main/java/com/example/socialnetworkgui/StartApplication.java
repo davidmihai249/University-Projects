@@ -41,7 +41,7 @@ public class StartApplication extends Application {
 
         String url = "jdbc:postgresql://localhost:5432/SocialNetwork";
         String username = "postgres";
-        String password = "Pikamar77";
+        String password = "834617";
 
         UserDbRepo userRepo = new UserDbRepo(url, username, password, new UserValidator());
         Repository<Tuple<Long>, Friendship> friendshipRepo = new FriendshipDbRepo(url, username, password, new FriendshipValidator());

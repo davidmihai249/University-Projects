@@ -22,12 +22,18 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.controlsfx.control.Notifications;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -110,6 +116,8 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     Button eventButton;
     @FXML
+    Button statisticsButton;
+    @FXML
     Button buttonLogOut;
     @FXML
     StackPane stackPane;
@@ -173,6 +181,23 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     ObservableList<Chat> modelChat = FXCollections.observableArrayList();
     @FXML
     Chat selectedChat;
+
+    //Statistics
+    @FXML
+    Pane statisticsPane;
+    @FXML
+    DatePicker startDateStatistics;
+    @FXML
+    DatePicker endDateStatistics;
+    @FXML
+    TextField firstNameStatistics;
+    @FXML
+    TextField lastNameStatistics;
+    @FXML
+    Button generate1Button;
+    @FXML
+    Button generate2Button;
+    FileChooser fileChooser = new FileChooser();
 
     public void setUp(Page page, Stage stage, AnchorPane pane){
         mainPage = page;
@@ -260,6 +285,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         });
         organizerColumn.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getOrganizer().getFirstName() + " " + cellData.getValue().getOrganizer().getLastName()));
         eventTable.setItems(modelEvents);
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         sentPane.setVisible(false);
         receivedPane.setVisible(false);
     }
@@ -314,14 +340,16 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 .filter(event -> service.getParticipantRepo().findOne(new Tuple<>(event.getId(), mainPage.getUser().getId())) != null || (event.getOrganizer().getFirstName().equals(mainPage.getFirstName()) && event.getOrganizer().getLastName().equals(mainPage.getLastName()))).forEach(event -> {
                     long days = ChronoUnit.DAYS.between(LocalDateTime.now(), event.getStartDate());
                     String daysLeft = String.valueOf(days);
-                    Notifications notificationsBuilder = Notifications.create()
-                            //.graphic(new ImageView(image))
-                            .title("New upcoming event!")
-                            .text(event.getName() + " it's happening in " + daysLeft + " days!")
-                            .hideAfter(Duration.seconds(20))
-                            .position(Pos.BOTTOM_RIGHT);
-                    notificationsBuilder.darkStyle();
-                    notificationsBuilder.show();
+                    if(Long.parseLong(daysLeft)>=0) {
+                        Notifications notificationsBuilder = Notifications.create()
+                                //.graphic(new ImageView(image))
+                                .title("New upcoming event!")
+                                .text(event.getName() + " it's happening in " + daysLeft + " days!")
+                                .hideAfter(Duration.seconds(20))
+                                .position(Pos.BOTTOM_RIGHT);
+                        notificationsBuilder.darkStyle();
+                        notificationsBuilder.show();
+                    }
                 });
     }
 
@@ -760,6 +788,178 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     @FXML
+    public void handlegenerate1Button() throws IOException {
+        LocalDate startDate = startDateStatistics.getValue();
+        LocalDate endDate = endDateStatistics.getValue();
+        if(startDate!=null && endDate!=null) {
+            List<Message> listOfMessages = mainPage.getService().getMessageStatistics(mainPage.getUser(), startDate, endDate);
+            List<Friendship> listOfFriendships = mainPage.getService().getFriendsStatistics(mainPage.getUser(), startDate, endDate);
+            float fontSize = 14;
+            float fontHeight = fontSize;
+            float leading = 20;
+
+            fileChooser.setTitle("Save pdf");
+            fileChooser.setInitialFileName("MessagesAndFriendshipsReceived");
+            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("pdf", "*.pdf"));
+            File file = fileChooser.showSaveDialog(accountStage);
+
+            if (file == null)
+                return;
+
+            PDDocument document = new PDDocument();
+            PDPage page = new PDPage();
+            document.addPage(page);
+            PDPageContentStream contentStream = new PDPageContentStream(document, page);
+            contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+
+            float yCoordinate = page.getCropBox().getUpperRightY() - 30;
+            float startX = page.getCropBox().getLowerLeftX() + 30;
+            float endX = page.getCropBox().getUpperRightX() - 30;
+
+            contentStream.beginText();
+            contentStream.newLineAtOffset(startX, yCoordinate);
+            yCoordinate -= fontHeight;
+            contentStream.newLineAtOffset(0, -leading);
+            yCoordinate -= leading;
+            contentStream.showText(startDateStatistics.getValue().toString() + " " + endDateStatistics.getValue().toString());
+            yCoordinate -= fontHeight;
+            contentStream.endText();
+
+            contentStream.moveTo(startX, yCoordinate);
+            contentStream.lineTo(endX, yCoordinate);
+            contentStream.stroke();
+            yCoordinate -= leading;
+
+            for (Message message : listOfMessages) {
+                if (yCoordinate - fontHeight < 50) {
+                    PDPage anotherPage = new PDPage();
+                    contentStream.close();
+                    document.addPage(anotherPage);
+                    contentStream = new PDPageContentStream(document, anotherPage);
+                    contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+                    yCoordinate = page.getCropBox().getUpperRightY() - 30;
+                }
+                contentStream.beginText();
+                contentStream.newLineAtOffset(startX, yCoordinate);
+                contentStream.showText(message.getMessage() + ": From " + message.getFromUser().getFirstName() + " " + message.getFromUser().getLastName());
+                yCoordinate -= fontHeight;
+                contentStream.endText();
+            }
+
+            contentStream.close();
+
+            PDPage messagesPage = new PDPage();
+            document.addPage(messagesPage);
+            contentStream = new PDPageContentStream(document, messagesPage);
+            contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+            yCoordinate = page.getCropBox().getUpperRightY() - 30;
+
+            contentStream.beginText();
+            contentStream.newLineAtOffset(startX, yCoordinate);
+            contentStream.showText("All the activities of " + mainPage.getFirstName() + " " + mainPage.getLastName());
+            yCoordinate -= fontHeight;
+            contentStream.endText();
+
+            contentStream.moveTo(startX, yCoordinate);
+            contentStream.lineTo(endX, yCoordinate);
+            contentStream.stroke();
+            yCoordinate -= leading;
+
+            for (Friendship friendship : listOfFriendships) {
+                if (yCoordinate - fontHeight < 50) {
+                    PDPage anotherPage = new PDPage();
+                    contentStream.close();
+                    document.addPage(anotherPage);
+                    contentStream = new PDPageContentStream(document, anotherPage);
+                    contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+                    yCoordinate = page.getCropBox().getUpperRightY() - 30;
+                }
+                contentStream.beginText();
+                contentStream.newLineAtOffset(startX, yCoordinate);
+                contentStream.showText(mainPage.getService().getUserRepo().findOne(friendship.getId().getLeft()).getFirstName() + " " + mainPage.getService().getUserRepo().findOne(friendship.getId().getLeft()).getLastName() + " became friend with " + mainPage.getService().getUserRepo().findOne(friendship.getId().getRight()).getFirstName() + " " + mainPage.getService().getUserRepo().findOne(friendship.getId().getRight()).getLastName() + " on " + friendship.getDate().toString());
+                yCoordinate -= fontHeight;
+                contentStream.endText();
+            }
+            contentStream.close();
+            document.save(file.getAbsolutePath());
+            MessageAlert.showErrorMessage(null, "You have successfully created a pdf file with the messages and the friendships received!");
+        }
+        else{
+            MessageAlert.showErrorMessage(null, "Some fields are empty!");
+        }
+    }
+
+    @FXML
+    public void handlegenerate2Button() throws IOException{
+        String firstName = firstNameStatistics.getText();
+        String lastName = lastNameStatistics.getText();
+        User user = mainPage.getService().getUser(firstName,lastName);
+        LocalDate startDate = startDateStatistics.getValue();
+        LocalDate endDate = endDateStatistics.getValue();
+        if(firstName!=null && lastName!=null && startDate!=null && endDate!=null) {
+            List<Message> listOfMessages = mainPage.getService().getMessageStatistics2(user, mainPage.getUser(), startDate, endDate);
+            float fontSize = 14;
+            float fontHeight = fontSize;
+            float leading = 20;
+
+            fileChooser.setTitle("Save pdf");
+            fileChooser.setInitialFileName("messagesReceived");
+            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("pdf", "*.pdf"));
+            File file = fileChooser.showSaveDialog(accountStage);
+
+            if (file == null)
+                return;
+
+            PDDocument document = new PDDocument();
+            PDPage page = new PDPage();
+            document.addPage(page);
+            PDPageContentStream contentStream = new PDPageContentStream(document, page);
+            contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+
+            float yCoordinate = page.getCropBox().getUpperRightY() - 30;
+            float startX = page.getCropBox().getLowerLeftX() + 30;
+            float endX = page.getCropBox().getUpperRightX() - 30;
+
+            contentStream.beginText();
+            contentStream.newLineAtOffset(startX, yCoordinate);
+            yCoordinate -= fontHeight;
+            contentStream.newLineAtOffset(0, -leading);
+            yCoordinate -= leading;
+            contentStream.showText("Messages from " + user.getFirstName() + " " + user.getLastName() + " to " + mainPage.getFirstName() + " " + mainPage.getLastName());
+            yCoordinate -= fontHeight;
+            contentStream.endText();
+
+            contentStream.moveTo(startX, yCoordinate);
+            contentStream.lineTo(endX, yCoordinate);
+            contentStream.stroke();
+            yCoordinate -= leading;
+
+            for (Message message : listOfMessages) {
+                if (yCoordinate - fontHeight < 50) {
+                    PDPage anotherPage = new PDPage();
+                    contentStream.close();
+                    document.addPage(anotherPage);
+                    contentStream = new PDPageContentStream(document, anotherPage);
+                    contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+                    yCoordinate = page.getCropBox().getUpperRightY() - 30;
+                }
+                contentStream.beginText();
+                contentStream.newLineAtOffset(startX, yCoordinate);
+                contentStream.showText(message.getMessage() + ": From " + message.getFromUser().getFirstName() + " " + message.getFromUser().getLastName());
+                yCoordinate -= fontHeight;
+                contentStream.endText();
+            }
+
+            contentStream.close();
+            document.save(file.getAbsolutePath());
+            MessageAlert.showErrorMessage(null, "You have successfully created a pdf file with the messages received!");
+        }
+        else{
+            MessageAlert.showErrorMessage(null, "Some fields are empty!");
+        }
+    }
+
+    @FXML
     public void handleMessagesButton() {
         paneMessages.toFront();
     }
@@ -767,6 +967,11 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     public void handleEventsButton(){
         paneEvents.toFront();
+    }
+
+    @FXML
+    public void handleStatisticsButton(){
+        statisticsPane.toFront();
     }
 
     @FXML
