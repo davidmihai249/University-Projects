@@ -378,7 +378,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 .filter(event -> service.getParticipantRepo().findOne(new Tuple<>(event.getId(), mainPage.getUser().getId())) != null || (event.getOrganizer().getFirstName().equals(mainPage.getFirstName()) && event.getOrganizer().getLastName().equals(mainPage.getLastName()))).forEach(event -> {
                     long days = ChronoUnit.DAYS.between(LocalDateTime.now(), event.getStartDate());
                     String daysLeft = String.valueOf(days);
-                    if(Long.parseLong(daysLeft)>=0) {
+                    if (Long.parseLong(daysLeft) > 0) {
                         Notifications notificationsBuilder = Notifications.create()
                                 //.graphic(new ImageView(image))
                                 .title("New upcoming event!")
@@ -387,6 +387,31 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                                 .position(Pos.BOTTOM_RIGHT);
                         notificationsBuilder.darkStyle();
                         notificationsBuilder.show();
+                    }
+                    else {
+                        long hours = ChronoUnit.HOURS.between(LocalDateTime.now(), event.getStartDate());
+                        String hoursleft = String.valueOf(hours);
+                        if (hours > 0) {
+                            Notifications notificationsBuilder = Notifications.create()
+                                    .title("New upcoming event!")
+                                    .text(event.getName() + " it's happening in " + hoursleft + " hours!")
+                                    .hideAfter(Duration.seconds(20))
+                                    .position(Pos.BOTTOM_RIGHT);
+                            notificationsBuilder.darkStyle();
+                            notificationsBuilder.show();
+                        } else {
+                            long minutes = ChronoUnit.MINUTES.between(LocalDateTime.now(), event.getStartDate());
+                            String minutesleft = String.valueOf(hours);
+                            if (minutes > 0) {
+                                Notifications notificationsBuilder = Notifications.create()
+                                        .title("New upcoming event!")
+                                        .text(event.getName() + " it's happening in " + minutesleft + " minutes!")
+                                        .hideAfter(Duration.seconds(20))
+                                        .position(Pos.BOTTOM_RIGHT);
+                                notificationsBuilder.darkStyle();
+                                notificationsBuilder.show();
+                            }
+                        }
                     }
                 });
     }
@@ -943,10 +968,13 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     public void handlegenerate2Button() throws IOException{
         String firstName = firstNameStatistics.getText();
         String lastName = lastNameStatistics.getText();
-        User user = mainPage.getService().getUser(firstName,lastName);
         LocalDate startDate = startDateStatistics.getValue();
         LocalDate endDate = endDateStatistics.getValue();
-        if(firstName!=null && lastName!=null && startDate!=null && endDate!=null) {
+        if(firstName.matches("[ ]*") || lastName.matches("[ ]*") || startDate==null || endDate==null){
+            MessageAlert.showErrorMessage(null, "Some fields are empty!");
+        }
+        else {
+            User user = mainPage.getService().getUser(firstName,lastName);
             List<Message> listOfMessages = mainPage.getService().getMessageStatistics2(user, mainPage.getUser(), startDate, endDate);
             float fontSize = 14;
             float leading = 20;
@@ -1002,9 +1030,6 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             contentStream.close();
             document.save(file.getAbsolutePath());
             MessageAlert.showMessage(null, Alert.AlertType.INFORMATION,"Information", "You have successfully created a pdf file with the messages received!");
-        }
-        else{
-            MessageAlert.showErrorMessage(null, "Some fields are empty!");
         }
     }
 
