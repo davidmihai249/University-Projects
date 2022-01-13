@@ -2,12 +2,16 @@ package com.example.socialnetworkgui.service;
 
 import com.example.socialnetworkgui.domain.*;
 import com.example.socialnetworkgui.domain.validators.RequestException;
+import com.example.socialnetworkgui.domain.validators.ValidationException;
+import com.example.socialnetworkgui.domain.validators.Validator;
+import com.example.socialnetworkgui.domain.validators.ValidatorEvent;
 import com.example.socialnetworkgui.repository.Repository;
 import com.example.socialnetworkgui.utils.events.UserFriendChangeEvent;
 import com.example.socialnetworkgui.utils.observer.Observable;
 import com.example.socialnetworkgui.utils.observer.Observer;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,13 +21,17 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
     private final Repository<Tuple<Long>, FriendRequest> requestRepo;
     private final Repository<Long, Message> messageRepo;
     private final Repository<Long, Chat> chatRepo;
+    private final Repository<Long,Event> eventRepo;
+    private final Repository<Tuple<Long>,Participant> participantRepo;
     private List<Observer<UserFriendChangeEvent>> observers = new ArrayList<>();
 
-    public UserFriendshipDbService(Repository<Long, User> userRepo, Repository<Tuple<Long>, Friendship> friendshipRepo, Repository<Tuple<Long>, FriendRequest> requestRepository, Repository<Long, Message> messageRepository, Repository<Long, Chat> chatRepo){
+    public UserFriendshipDbService(Repository<Long, User> userRepo, Repository<Tuple<Long>, Friendship> friendshipRepo, Repository<Tuple<Long>, FriendRequest> requestRepository, Repository<Long, Message> messageRepository, Repository<Long, Chat> chatRepo,Repository<Long,Event> eventRepo,Repository<Tuple<Long>,Participant> participantRepo){
         super(userRepo, friendshipRepo);
         requestRepo = requestRepository;
         messageRepo = messageRepository;
         this.chatRepo = chatRepo;
+        this.eventRepo = eventRepo;
+        this.participantRepo = participantRepo;
     }
 
     public Repository<Long, User> getUserRepo(){
@@ -169,6 +177,10 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
                 .filter(x -> x.getId().getRight().equals(receiverId))
                 .forEach(f -> usersRequests.add(new FriendRequestDTO(userService.getUserRepo().findOne(f.getId().getLeft()), f.getStatus(),f.getDate())));
         return usersRequests;
+    }
+
+    public Repository<Tuple<Long>, Participant> getParticipantRepo() {
+        return participantRepo;
     }
 
     /**
@@ -318,11 +330,43 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
      * @return a list with messages
      */
     public List<Message> getReceivedMessages(String firstName, String lastName) {
-        User user = getUser(firstName,lastName);
+        User user = getUser(firstName, lastName);
         Spliterator<Message> spliterator = messageRepo.findAll().spliterator();
-        return StreamSupport.stream(spliterator,false)
+        return StreamSupport.stream(spliterator, false)
                 .filter(m -> m.getToUser().contains(user))
                 .collect(Collectors.toList());
+    }
+
+    public Repository<Long, Event> getEventRepo() {
+        return eventRepo;
+    }
+
+    public void addEvent(Event event) throws ValidationException{
+        Validator<Event> validatorEvent = new ValidatorEvent();
+        validatorEvent.validate(event);
+        eventRepo.save(event);
+    }
+
+    public void addParticipant(Event event,User user){
+        participantRepo.save(new Participant(event.getId(),user.getId()));
+    }
+
+    public void removeParticipant(Event event,User user){
+        participantRepo.delete(new Tuple<>(event.getId(),user.getId()));
+    }
+
+    public void notificationson(Event event,User user){
+        participantRepo.update(new Participant(event.getId(),user.getId(),true));
+    }
+
+    public void notificationsoff(Event event,User user){
+        participantRepo.update(new Participant(event.getId(),user.getId(),false));
+    }
+
+    public List<Event> getAllEvents(){
+        Iterable<Event> allEvents = eventRepo.findAll();
+        Spliterator<Event> spliterator = allEvents.spliterator();
+        return StreamSupport.stream(spliterator,false).toList();
     }
 
     @Override

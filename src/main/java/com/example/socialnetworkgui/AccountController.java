@@ -18,16 +18,23 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import org.controlsfx.control.Notifications;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -103,6 +110,8 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     Button buttonMessages;
     @FXML
+    Button eventButton;
+    @FXML
     Button buttonLogOut;
     @FXML
     StackPane stackPane;
@@ -113,11 +122,45 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     Pane paneMessages;
 
+    //Event
+    @FXML
+    Pane eventPane;
+    @FXML
+    Button subscribeButton;
+    @FXML
+    Button unsubscribeButton;
+    @FXML
+    Button participateButton;
+    @FXML
+    Button unparticipateButton;
+    @FXML
+    Button addEventButton;
+    @FXML
+    TableView<Event> eventTable;
+    @FXML
+    TableColumn<Event,String> nameColumn;
+    @FXML
+    TableColumn<Event,String> startDateColumn;
+    @FXML
+    TableColumn<Event,String> endDateColumn;
+    @FXML
+    TableColumn<Event,String> descriptionColumn;
+    @FXML
+    TableColumn<Event,String> locationColumn;
+    @FXML
+    TableColumn<Event,String> categoryColumn;
+    @FXML
+    TableColumn<Event,String> organizerColumn;
+    @FXML
+    private ObservableList<Event> modelEvents = FXCollections.observableArrayList();
+
     //Chat
     @FXML
     private TableView<Chat> tableChatFriends;
     @FXML
     private TableColumn<Chat,String> chatColumn;
+    @FXML
+    Button addChatButton;
     @FXML
     private ListView<Message> listViewConversation;
     @FXML
@@ -182,6 +225,39 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         });
         tableChatFriends.setItems(modelChat);
         listViewConversation.setItems(modelMessages);
+        nameColumn.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getName()));
+        startDateColumn.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getStartDate().toString()));
+        endDateColumn.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getEndDate().toString()));
+        descriptionColumn.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getDescription()));
+        locationColumn.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getLocation()));
+        categoryColumn.setCellValueFactory(features ->{
+            String category = features.getValue().getCategory();
+            SimpleStringProperty categorySting = new SimpleStringProperty(category);
+            User organizer = features.getValue().getOrganizer();
+            if(organizer.getFirstName().matches(mainPage.getFirstName()) && organizer.getLastName().matches(mainPage.getLastName())){
+                return Bindings.when(categorySting.isEmpty())
+                        .then(categorySting)
+                        .otherwise(categorySting);
+            }
+            else
+            {
+                Participant participant = service.getParticipantRepo().findOne(new Tuple<>(features.getValue().getId(),mainPage.getUser().getId()));
+                if(participant==null) {
+                    categorySting = new SimpleStringProperty("No Participating");
+                    return Bindings.when(categorySting.isEmpty())
+                            .then(categorySting)
+                            .otherwise(categorySting);
+                }
+                else{
+                    categorySting = new SimpleStringProperty("Participating");
+                    return Bindings.when(categorySting.isEmpty())
+                            .then(categorySting)
+                            .otherwise(categorySting);
+                }
+            }
+        });
+        organizerColumn.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getOrganizer().getFirstName() + " " + cellData.getValue().getOrganizer().getLastName()));
+        eventTable.setItems(modelEvents);
         sentPane.setVisible(false);
         receivedPane.setVisible(false);
     }
@@ -215,9 +291,32 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                 initModelFriend();
                 initModelReceivedRequest();
                 initModelSentRequest();
+                initModelEvents();
             }
             case REGISTRATION: {
 
+            }
+        }
+    }
+
+    private void initModelEvents(){
+        Iterable<Event> events = service.getAllEvents();
+        List<Event> eventsList = StreamSupport.stream(events.spliterator(),false).toList();
+        modelEvents.setAll(eventsList);
+        for(Event event:eventsList){
+            if(service.getParticipantRepo().findOne(new Tuple<>(event.getId(),mainPage.getUser().getId()))!=null || (event.getOrganizer().getFirstName().equals(mainPage.getFirstName()) && event.getOrganizer().getLastName().equals(mainPage.getLastName()))){
+                long days = ChronoUnit.DAYS.between(LocalDateTime.now(),event.getStartDate());
+                String daysleft = String.valueOf(days);
+                //File imageFile = new File("Images/happy_clown_transparent.png");
+                //Image image = new Image(imageFile.toURI().toString());
+                Notifications notificationsBuilder = Notifications.create()
+                        //.graphic(new ImageView(image))
+                        .title("New upcoming event!")
+                        .text(event.getName() + " it's happening in " + daysleft + " days!")
+                        .hideAfter(Duration.seconds(20))
+                        .position(Pos.BOTTOM_RIGHT);
+                notificationsBuilder.darkStyle();
+                notificationsBuilder.show();
             }
         }
     }
@@ -523,8 +622,139 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     @FXML
+    public void handlenotificationonbutton(){
+        Event selectedevent = eventTable.getSelectionModel().getSelectedItem();
+        if(selectedevent==null){
+            MessageAlert.showErrorMessage(null, "No event has been selected");
+        }
+        else {
+            if (selectedevent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedevent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
+                MessageAlert.showErrorMessage(null, "You're the host, you can't turn on the notifications!");
+            } else {
+                if (selectedevent == null) {
+                    MessageAlert.showErrorMessage(null, "No event selected!");
+                } else {
+                    service.notificationson(selectedevent, mainPage.getUser());
+                    eventTable.getSelectionModel().clearSelection();
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void handlenotificationoffbutton(){
+        Event selectedevent = eventTable.getSelectionModel().getSelectedItem();
+        if(selectedevent==null){
+            MessageAlert.showErrorMessage(null, "No event has been selected");
+        }
+        else {
+            if (selectedevent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedevent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
+                MessageAlert.showErrorMessage(null, "You're the host, you can't turn off the notifications!");
+            } else {
+                if (selectedevent == null) {
+                    MessageAlert.showErrorMessage(null, "No event selected!");
+                } else {
+                    service.notificationsoff(selectedevent, mainPage.getUser());
+                    eventTable.getSelectionModel().clearSelection();
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void handleparticipatebutton(){
+        Event selectedevent = eventTable.getSelectionModel().getSelectedItem();
+        if(selectedevent==null){
+            MessageAlert.showErrorMessage(null, "No event has been selected");
+        }
+        else {
+            if (selectedevent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedevent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
+                MessageAlert.showErrorMessage(null, "You're the host of the event, you can't do that!");
+            } else {
+                if (selectedevent == null) {
+                    MessageAlert.showErrorMessage(null, "No event selected!");
+                } else {
+                    service.addParticipant(selectedevent, mainPage.getUser());
+                    eventTable.getSelectionModel().clearSelection();
+                }
+            }
+            eventTable.getItems().clear();
+            initModelEvents();
+        }
+    }
+
+    @FXML
+    public void handleunparticipatebutton(){
+        Event selectedevent = eventTable.getSelectionModel().getSelectedItem();
+        if(selectedevent==null){
+            MessageAlert.showErrorMessage(null, "No event has been selected");
+        }
+        else {
+            if (selectedevent.getOrganizer().getFirstName().matches(mainPage.getFirstName()) && selectedevent.getOrganizer().getLastName().matches(mainPage.getLastName())) {
+                MessageAlert.showErrorMessage(null, "You're the host of the event, you can't do that!");
+            } else {
+                if (selectedevent == null) {
+                    MessageAlert.showErrorMessage(null, "No event selected!");
+                } else {
+                    service.removeParticipant(selectedevent, mainPage.getUser());
+                    eventTable.getSelectionModel().clearSelection();
+                }
+            }
+            eventTable.getItems().clear();
+            initModelEvents();
+        }
+    }
+
+    @FXML
+    public void handleAddEventButton(){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("views/event.fxml"));
+            AnchorPane root = loader.load();
+            Stage addEventStage = new Stage();
+            addEventStage.setTitle("Add new event.");
+            addEventStage.initModality(Modality.WINDOW_MODAL);
+            Scene scene = new Scene(root);
+            addEventStage.setScene(scene);
+            EventController eventController = loader.getController();
+            eventController.setService(service, addEventStage,mainPage.getUser());
+            addEventStage.show();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void handleAddChatButton(){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("views/chat.fxml"));
+            AnchorPane root = loader.load();
+            Stage addchatStage = new Stage();
+            addchatStage.setTitle("Add new chat.");
+            addchatStage.initModality(Modality.WINDOW_MODAL);
+            Scene scene = new Scene(root);
+            addchatStage.setScene(scene);
+            ChatController ChatController = loader.getController();
+            ChatController.setService(service, addchatStage,mainPage.getUser());
+            addchatStage.show();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
     public void handleMessagesButton() {
         paneMessages.toFront();
+        initModelChatsList();
+        initModelChat();
+    }
+
+    @FXML
+    public void handleEventsButton(){
+        eventPane.toFront();
     }
 
     @FXML
