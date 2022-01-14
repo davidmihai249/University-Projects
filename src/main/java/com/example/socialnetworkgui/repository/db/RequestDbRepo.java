@@ -187,4 +187,31 @@ public class RequestDbRepo implements Repository<Tuple<Long>, FriendRequest> {
         }
         return requests;
     }
+
+    public Iterable<FriendRequest> getUsersSentRequests(Long senderID){
+        Set<FriendRequest> requests = new HashSet<>();
+        try (Connection connection = DriverManager.getConnection(url, username, password);
+             PreparedStatement ps = connection.prepareStatement("SELECT * FROM requests WHERE sender_id = (?)"))
+        {
+            ps.setLong(1,senderID);
+            ResultSet resultSet = ps.executeQuery();
+            while (resultSet.next()){
+                Long receiverID = resultSet.getLong("receiver_id");
+                int integerStatus = resultSet.getInt("status");
+                LocalDate date = LocalDate.parse(resultSet.getDate("date").toString());
+                RequestStatus status = getRequestStatus(integerStatus);
+                if (status == null){
+                    throw new ValidationException("Invalid friend request status!");
+                }
+                FriendRequest request = new FriendRequest(senderID,receiverID,status,date);
+                request.setId(new Tuple<>(senderID, receiverID));
+                requests.add(request);
+            }
+            return requests;
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+        return requests;
+    }
 }

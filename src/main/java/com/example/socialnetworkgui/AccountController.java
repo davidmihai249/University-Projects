@@ -32,7 +32,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.controlsfx.control.Notifications;
 
@@ -348,32 +347,39 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @Override
     public void update(UserFriendChangeEvent userFriendChangeEvent) {
         switch (userFriendChangeEvent.getType()) {
-            case FRIEND_ADD: {
+            case FRIEND_ADD:
+            case REQUEST_UNSEND: {
                 initModelSentRequest();
+                break;
             }
             case FRIEND_REMOVE: {
                 initModelFriend();
-            }
-            case REQUEST_UNSEND: {
-                initModelSentRequest();
+                break;
             }
             case REQUEST_APPROVE: {
                 initModelFriend();
                 initModelReceivedRequest();
+                break;
             }
             case REQUEST_REJECT: {
                 initModelReceivedRequest();
+                break;
             }
             case MESSAGE: {
                 initModelChat();
                 initModelChatsList();
+                break;
             }
-            case REGISTRATION: { }
+            case REGISTRATION: {
+                break;
+            }
             case EVENTS: {
                 initModelEvents(service.getEventsOnPage(0));
+                break;
             }
             case CHAT: {
                 initModelChatsList();
+                break;
             }
         }
     }
