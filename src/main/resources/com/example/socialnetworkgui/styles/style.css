@@ -102,6 +102,9 @@
     -fx-background-insets: 0, 0 0 1 0;
     -fx-padding: 0.0em;
 }
+.table-row-cell:filled:selected:focused{
+    -fx-text-fill: purple;
+}
 
 .table-view .virtual-flow .scroll-bar:vertical,
 .table-view .virtual-flow .scroll-bar:vertical .track,
@@ -137,4 +140,18 @@
 .dialog:header *.header-panel {
     -fx-background-color: linear-gradient(to bottom right, #7400B8, #5E60CE);
     -fx-text-color : white;
+}
+
+.list-cell:filled:selected:focused, .list-cell:filled:selected {
+    -fx-background-color: linear-gradient(#328BDB 0%, #207BCF 25%, #1973C9 75%, #0A65BF 100%);
+    -fx-text-fill: white;
+}
+
+.list-cell:even {
+    -fx-background-color: white;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #7400B8;
+    -fx-text-fill: white;
 }

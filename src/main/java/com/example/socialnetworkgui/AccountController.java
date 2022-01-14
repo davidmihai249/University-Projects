@@ -225,6 +225,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         accountStage = stage;
         anchorPane = pane;
         setInitialState();
+        sendNotifications(service.getAllEvents());
     }
 
     private void setInitialState(){
@@ -235,24 +236,36 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         initializedEvents = false;
     }
 
-    public void initialize(){
+    private void initializeFriendsTable() {
         // Set up the friends table
         friendsFirstName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFriend().getFirstName()));
         friendsLastName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFriend().getLastName()));
         friendsSinceDate.setCellValueFactory(new PropertyValueFactory<>("date"));
         tableFriends.setItems(modelFriend);
+    }
+
+
+    private void initializeReceivedRequestsTable() {
         // Set up the received requests table
         receivedRequestsFirstName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSender().getFirstName()));
         receivedRequestsLastName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSender().getLastName()));
         receivedRequestsStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         receivedRequestsDate.setCellValueFactory(cellData-> new SimpleStringProperty(cellData.getValue().getDate().toString()));
         tableReceivedRequests.setItems(modelRequest);
+        receivedPane.setVisible(false);
+    }
+
+    private void initializeSentRequestsTable() {
         // Set up the sent requests table
         sentRequestsFirstName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSender().getFirstName()));
         sentRequestsLastName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSender().getLastName()));
         sentRequestsStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         sentRequestsDate.setCellValueFactory(cellData-> new SimpleStringProperty(cellData.getValue().getDate().toString()));
         tableSentRequests.setItems(modelSentRequest);
+        sentPane.setVisible(false);
+    }
+
+    private void initializeChatsTable() {
         chatColumn.setCellValueFactory(features ->{
             String chatNameString = features.getValue().getChatName();
             SimpleStringProperty chatName = new SimpleStringProperty(chatNameString);
@@ -277,7 +290,9 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
         });
         tableChatFriends.setItems(modelChat);
-        listViewConversation.setItems(modelMessages);
+    }
+
+    private void initializeEventsTable() {
         nameColumn.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getName()));
         startDateColumn.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getStartDate().toString()));
         endDateColumn.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getEndDate().toString()));
@@ -311,9 +326,16 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         });
         organizerColumn.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getOrganizer().getFirstName() + " " + cellData.getValue().getOrganizer().getLastName()));
         eventTable.setItems(modelEvents);
+    }
+
+    public void initialize(){
+        initializeFriendsTable();
+        initializeReceivedRequestsTable();
+        initializeSentRequestsTable();
+        initializeChatsTable();
+        listViewConversation.setItems(modelMessages);
+        initializeEventsTable();
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-        sentPane.setVisible(false);
-        receivedPane.setVisible(false);
     }
 
     @Override
