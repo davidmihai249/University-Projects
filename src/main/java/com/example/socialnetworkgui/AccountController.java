@@ -31,6 +31,8 @@ import javafx.util.Duration;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.controlsfx.control.Notifications;
 
@@ -877,8 +879,6 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         if(startDate!=null && endDate!=null) {
             List<Message> listOfMessages = mainPage.getService().getMessageStatistics(mainPage.getUser(), startDate, endDate);
             List<Friendship> listOfFriendships = mainPage.getService().getFriendsStatistics(mainPage.getUser(), startDate, endDate);
-            float fontSize = 14;
-            float leading = 20;
 
             fileChooser.setTitle("Save pdf");
             fileChooser.setInitialFileName("MessagesAndFriendshipsReceived");
@@ -892,7 +892,8 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             PDPage page = new PDPage();
             document.addPage(page);
             PDPageContentStream contentStream = new PDPageContentStream(document, page);
-            contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+            PDFont font  = PDType1Font.TIMES_ROMAN;
+            contentStream.setFont(font, 14);
 
             float yCoordinate = page.getCropBox().getUpperRightY() - 30;
             float startX = page.getCropBox().getLowerLeftX() + 30;
@@ -900,31 +901,31 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
             contentStream.beginText();
             contentStream.newLineAtOffset(startX, yCoordinate);
-            yCoordinate -= fontSize;
-            contentStream.newLineAtOffset(0, -leading);
-            yCoordinate -= leading;
+            yCoordinate -= 14;
+            contentStream.newLineAtOffset(0, -20);
+            yCoordinate -= 20;
             contentStream.showText(startDateStatistics.getValue().toString() + " " + endDateStatistics.getValue().toString());
-            yCoordinate -= fontSize;
+            yCoordinate -= 14;
             contentStream.endText();
 
             contentStream.moveTo(startX, yCoordinate);
             contentStream.lineTo(endX, yCoordinate);
             contentStream.stroke();
-            yCoordinate -= leading;
+            yCoordinate -= 20;
 
             for (Message message : listOfMessages) {
-                if (yCoordinate - fontSize < 50) {
+                if (yCoordinate - 14 < 50) {
                     PDPage anotherPage = new PDPage();
                     contentStream.close();
                     document.addPage(anotherPage);
                     contentStream = new PDPageContentStream(document, anotherPage);
-                    contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+                    contentStream.setFont(font, 14);
                     yCoordinate = page.getCropBox().getUpperRightY() - 30;
                 }
                 contentStream.beginText();
                 contentStream.newLineAtOffset(startX, yCoordinate);
                 contentStream.showText(message.getMessage() + ": From " + message.getFromUser().getFirstName() + " " + message.getFromUser().getLastName());
-                yCoordinate -= fontSize;
+                yCoordinate -= 14;
                 contentStream.endText();
             }
 
@@ -933,33 +934,33 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             PDPage messagesPage = new PDPage();
             document.addPage(messagesPage);
             contentStream = new PDPageContentStream(document, messagesPage);
-            contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+            contentStream.setFont(font, 14);
             yCoordinate = page.getCropBox().getUpperRightY() - 30;
 
             contentStream.beginText();
             contentStream.newLineAtOffset(startX, yCoordinate);
             contentStream.showText("All the activities of " + mainPage.getFirstName() + " " + mainPage.getLastName());
-            yCoordinate -= fontSize;
+            yCoordinate -= 14;
             contentStream.endText();
 
             contentStream.moveTo(startX, yCoordinate);
             contentStream.lineTo(endX, yCoordinate);
             contentStream.stroke();
-            yCoordinate -= leading;
+            yCoordinate -= 20;
 
             for (Friendship friendship : listOfFriendships) {
-                if (yCoordinate - fontSize < 50) {
+                if (yCoordinate - 14 < 50) {
                     PDPage anotherPage = new PDPage();
                     contentStream.close();
                     document.addPage(anotherPage);
                     contentStream = new PDPageContentStream(document, anotherPage);
-                    contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+                    contentStream.setFont(font, 14);
                     yCoordinate = page.getCropBox().getUpperRightY() - 30;
                 }
                 contentStream.beginText();
                 contentStream.newLineAtOffset(startX, yCoordinate);
                 contentStream.showText(mainPage.getService().getUserRepo().findOne(friendship.getId().getLeft()).getFirstName() + " " + mainPage.getService().getUserRepo().findOne(friendship.getId().getLeft()).getLastName() + " became friend with " + mainPage.getService().getUserRepo().findOne(friendship.getId().getRight()).getFirstName() + " " + mainPage.getService().getUserRepo().findOne(friendship.getId().getRight()).getLastName() + " on " + friendship.getDate().toString());
-                yCoordinate -= fontSize;
+                yCoordinate -= 14;
                 contentStream.endText();
             }
             contentStream.close();
@@ -983,8 +984,6 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         else {
             User user = mainPage.getService().getUser(firstName,lastName);
             List<Message> listOfMessages = mainPage.getService().getMessageStatistics2(user, mainPage.getUser(), startDate, endDate);
-            float fontSize = 14;
-            float leading = 20;
 
             fileChooser.setTitle("Save pdf");
             fileChooser.setInitialFileName("messagesReceived");
@@ -998,7 +997,9 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             PDPage page = new PDPage();
             document.addPage(page);
             PDPageContentStream contentStream = new PDPageContentStream(document, page);
-            contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+            PDFont font  = PDType1Font.TIMES_ROMAN;
+            contentStream.setFont(font, 14);
+            contentStream.setLeading(20);
 
             float yCoordinate = page.getCropBox().getUpperRightY() - 30;
             float startX = page.getCropBox().getLowerLeftX() + 30;
@@ -1006,31 +1007,31 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
             contentStream.beginText();
             contentStream.newLineAtOffset(startX, yCoordinate);
-            yCoordinate -= fontSize;
-            contentStream.newLineAtOffset(0, -leading);
-            yCoordinate -= leading;
+            yCoordinate -= 14;
+            contentStream.newLineAtOffset(0, -20);
+            yCoordinate -= 20;
             contentStream.showText("Messages from " + user.getFirstName() + " " + user.getLastName() + " to " + mainPage.getFirstName() + " " + mainPage.getLastName());
-            yCoordinate -= fontSize;
+            yCoordinate -= 14;
             contentStream.endText();
 
             contentStream.moveTo(startX, yCoordinate);
             contentStream.lineTo(endX, yCoordinate);
             contentStream.stroke();
-            yCoordinate -= leading;
+            yCoordinate -= 20;
 
             for (Message message : listOfMessages) {
-                if (yCoordinate - fontSize < 50) {
+                if (yCoordinate - 14 < 50) {
                     PDPage anotherPage = new PDPage();
                     contentStream.close();
                     document.addPage(anotherPage);
                     contentStream = new PDPageContentStream(document, anotherPage);
-                    contentStream.setFont(PDType1Font.TIMES_ROMAN, fontSize);
+                    contentStream.setFont(font, 14);
                     yCoordinate = page.getCropBox().getUpperRightY() - 30;
                 }
                 contentStream.beginText();
                 contentStream.newLineAtOffset(startX, yCoordinate);
                 contentStream.showText(message.getMessage() + ": From " + message.getFromUser().getFirstName() + " " + message.getFromUser().getLastName());
-                yCoordinate -= fontSize;
+                yCoordinate -= 14;
                 contentStream.endText();
             }
 
