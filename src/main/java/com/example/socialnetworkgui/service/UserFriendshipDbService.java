@@ -336,7 +336,7 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
     }
 
     private int page = 0;
-    private final int size = 1;
+    private final int size = 4;
 
     public Repository<Long, Event> getEventRepo() {
         return eventRepo;
