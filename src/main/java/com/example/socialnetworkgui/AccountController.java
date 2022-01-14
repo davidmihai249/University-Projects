@@ -64,6 +64,8 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     @FXML
     Label labelLoggedUser;
     @FXML
+    ImageView gifImageView;
+    @FXML
     Label labelProfile;
     @FXML
     TableView<FriendDTO> tableFriends;
@@ -222,7 +224,10 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         labelProfile.setText(labelProfile.getText() + " " + labelLoggedUser.getText());
         File imageFile = new File("Images/profile_clown_small.png");
         Image image = new Image(imageFile.toURI().toString());
+        File gifFile = new File("Images/welcome_clown.gif");
+        Image gif = new Image(gifFile.toURI().toString());
         buttonProfilePage.setGraphic(new ImageView(image));
+        gifImageView.setImage(gif);
         service.addObserver(this);
         accountStage = stage;
         anchorPane = pane;
@@ -374,15 +379,15 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     private void sendNotifications(List<Event> eventsList){
-        //File imageFile = new File("Images/happy_clown_transparent.png");
-        //Image image = new Image(imageFile.toURI().toString());
+        File imageFile = new File("Images/notification_clown.png");
+        Image image = new Image(imageFile.toURI().toString());
         eventsList.stream()
                 .filter(event -> service.getParticipantRepo().findOne(new Tuple<>(event.getId(), mainPage.getUser().getId())) != null || (event.getOrganizer().getFirstName().equals(mainPage.getFirstName()) && event.getOrganizer().getLastName().equals(mainPage.getLastName()))).forEach(event -> {
                     long days = ChronoUnit.DAYS.between(LocalDateTime.now(), event.getStartDate());
                     String daysLeft = String.valueOf(days);
                     if (Long.parseLong(daysLeft) > 0) {
                         Notifications notificationsBuilder = Notifications.create()
-                                //.graphic(new ImageView(image))
+                                .graphic(new ImageView(image))
                                 .title("New upcoming event!")
                                 .text(event.getName() + " it's happening in " + daysLeft + " days!")
                                 .hideAfter(Duration.seconds(20))
@@ -396,6 +401,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                         if (hours > 0) {
                             Notifications notificationsBuilder = Notifications.create()
                                     .title("New upcoming event!")
+                                    .graphic(new ImageView(image))
                                     .text(event.getName() + " it's happening in " + hoursleft + " hours!")
                                     .hideAfter(Duration.seconds(20))
                                     .position(Pos.BOTTOM_RIGHT);
@@ -407,6 +413,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
                             if (minutes > 0) {
                                 Notifications notificationsBuilder = Notifications.create()
                                         .title("New upcoming event!")
+                                        .graphic(new ImageView(image))
                                         .text(event.getName() + " it's happening in " + minutesleft + " minutes!")
                                         .hideAfter(Duration.seconds(20))
                                         .position(Pos.BOTTOM_RIGHT);
