@@ -224,6 +224,15 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         service.addObserver(this);
         accountStage = stage;
         anchorPane = pane;
+        setInitialState();
+    }
+
+    private void setInitialState(){
+        initializedChatLists = false;
+        initializedFriends = false;
+        initializedReceivedRequests = false;
+        initializedSentRequests = false;
+        initializedEvents = false;
     }
 
     public void initialize(){
