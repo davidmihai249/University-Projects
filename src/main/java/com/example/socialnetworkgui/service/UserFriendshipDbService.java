@@ -199,10 +199,8 @@ public class UserFriendshipDbService extends UserFriendshipService implements Ob
             throw new IllegalArgumentException("Sender name is invalid!");
         }
         List<FriendRequestDTO> usersRequests = new ArrayList<>();
-        Iterable<FriendRequest> allRequests = requestRepo.findAll();
-        Spliterator<FriendRequest> spliterator = allRequests.spliterator();
-        StreamSupport.stream(spliterator, false)
-                .filter(x -> x.getId().getLeft().equals(senderID))
+        Iterable<FriendRequest> iterableRequests = ((RequestDbRepo)requestRepo).getUsersSentRequests(senderID);
+        StreamSupport.stream(iterableRequests.spliterator(), false)
                 .forEach(f -> usersRequests.add(new FriendRequestDTO(userService.getUserRepo().findOne(f.getId().getRight()), f.getStatus(),f.getDate())));
         return usersRequests;
     }
