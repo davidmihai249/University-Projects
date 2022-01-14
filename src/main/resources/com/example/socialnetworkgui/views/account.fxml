@@ -274,20 +274,6 @@
                  </buttons>
                </ButtonBar>
             </Pane>
-            <Pane fx:id="paneProfile" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
-               <ImageView fx:id="gifImageView" fitHeight="362.0" fitWidth="480.0" layoutX="177.0" layoutY="158.0" pickOnBounds="true" preserveRatio="true" />
-               <Label fx:id="labelProfile" layoutY="37.0" prefHeight="76.0" prefWidth="833.0" styleClass="profileLabel" text="Logged in as: " textFill="WHITE">
-                  <font>
-                     <Font name="SansSerif Regular" size="24.0" />
-                  </font>
-                  <opaqueInsets>
-                     <Insets />
-                  </opaqueInsets>
-                  <padding>
-                     <Insets left="20.0" />
-                  </padding>
-               </Label>
-            </Pane>
             <Pane fx:id="paneStatistics" prefHeight="680.0" prefWidth="835.0" styleClass="tablePane">
                <Label layoutY="37.0" prefHeight="76.0" prefWidth="833.0" styleClass="profileLabel" text="Statistics: Generate different statistics in a pdf" textFill="WHITE">
                   <font>
@@ -314,6 +300,20 @@
                      <Font name="SansSerif Regular" size="18.0" />
                   </font>
                </Button>
+            </Pane>
+            <Pane fx:id="paneProfile" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
+               <ImageView fx:id="gifImageView" fitHeight="362.0" fitWidth="480.0" layoutX="177.0" layoutY="158.0" pickOnBounds="true" preserveRatio="true" />
+               <Label fx:id="labelProfile" layoutY="37.0" prefHeight="76.0" prefWidth="833.0" styleClass="profileLabel" text="Logged in as: " textFill="WHITE">
+                  <font>
+                     <Font name="SansSerif Regular" size="24.0" />
+                  </font>
+                  <opaqueInsets>
+                     <Insets />
+                  </opaqueInsets>
+                  <padding>
+                     <Insets left="20.0" />
+                  </padding>
+               </Label>
             </Pane>
          </StackPane>
       </center>
