@@ -20,7 +20,7 @@
 }
 
 .profileLabel{
-    -fx-background-color: #4ea8de;
+    -fx-background-color: linear-gradient(#5390d9, #4ea8de);
 }
 
 #buttonApprove:hover {
@@ -42,8 +42,7 @@
 }
 
 #topHBox {
-    /*-fx-background-color: linear-gradient(to bottom right, #7400B8, #5E60CE);*/
-    -fx-background-color: linear-gradient(to bottom right, #7400B8, #4ea8de);
+    -fx-background-color: linear-gradient(to bottom right, #7400B8, #80ffdb);
 }
 
 #mainButton {
@@ -55,7 +54,6 @@
 
 .tablePane {
     -fx-background-color: white;
-    /*-fx-background-color: #d080ff;*/
 }
 
 .table-view {
@@ -131,19 +129,18 @@
 }
 
 .dialog {
-    /*-fx-background-color: #5390D9;*/
     -fx-background-color: white;
 }
 .dialog.button {
     -fx-background-color: white;
 }
 .dialog:header *.header-panel {
-    -fx-background-color: linear-gradient(to bottom right, #7400B8, #5E60CE);
+    -fx-background-color: linear-gradient(to bottom right, #48bfe3, #56cfe1);
     -fx-text-color : white;
 }
 
 .list-cell:filled:selected:focused, .list-cell:filled:selected {
-    -fx-background-color: linear-gradient(#328BDB 0%, #207BCF 25%, #1973C9 75%, #0A65BF 100%);
+    -fx-background-color: linear-gradient(#5390d9, #4ea8de);
     -fx-text-fill: white;
 }
 
@@ -152,6 +149,6 @@
 }
 
 .list-cell:filled:hover {
-    -fx-background-color: #7400B8;
+    -fx-background-color: linear-gradient(#72efdd, #80ffdb);
     -fx-text-fill: white;
 }
