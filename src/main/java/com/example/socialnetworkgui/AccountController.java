@@ -210,12 +210,6 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     Button generate2Button;
     FileChooser fileChooser = new FileChooser();
 
-    private static boolean initializedChatLists = false;
-    private static boolean initializedFriends = false;
-    private static boolean initializedReceivedRequests = false;
-    private static boolean initializedSentRequests = false;
-    private static boolean initializedEvents = false;
-
     public void setUp(Page page, Stage stage, AnchorPane pane){
         mainPage = page;
         service = page.getService();
@@ -230,16 +224,8 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         service.addObserver(this);
         accountStage = stage;
         anchorPane = pane;
-        setInitialState();
+        mainPage.setInitialState();
         sendNotifications(service.getAllEvents());
-    }
-
-    private void setInitialState(){
-        initializedChatLists = false;
-        initializedFriends = false;
-        initializedReceivedRequests = false;
-        initializedSentRequests = false;
-        initializedEvents = false;
     }
 
     private void initializeFriendsTable() {
@@ -350,6 +336,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             case FRIEND_ADD:
             case REQUEST_UNSEND: {
                 initModelSentRequest();
+                initModelReceivedRequest();
                 break;
             }
             case FRIEND_REMOVE: {
@@ -359,6 +346,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             case REQUEST_APPROVE: {
                 initModelFriend();
                 initModelReceivedRequest();
+                initModelSentRequest();
                 break;
             }
             case REQUEST_REJECT: {
@@ -463,7 +451,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
     }
 
     private void initModelFriend() {
-        Iterable<FriendDTO> friendDTOS = mainPage.getFriendsList();
+        Iterable<FriendDTO> friendDTOS = mainPage.getService().getAllFriendships(mainPage.getFirstName(), mainPage.getLastName());
         List<FriendDTO> friendDTOList = StreamSupport.stream(friendDTOS.spliterator(), false).toList();
         modelFriend.setAll(friendDTOList);
     }
@@ -634,14 +622,14 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     @FXML
     public void handleFriendsButton(){
-        if(!initializedFriends){
+        if(!mainPage.isInitializedFriends()){
             initModelFriend();
-            initializedFriends = true;
+            mainPage.setInitializedFriends(true);
         }
         paneFriends.toFront();
     }
 
-    public void showFriendEditDialog() {
+    public void showFriendEditDialog(Page mainPage) {
         try{
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("views/edit-friend-request.fxml"));
@@ -652,7 +640,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
             Scene scene = new Scene(root);
             dialogStage.setScene(scene);
             EditFriendRequestController editFriendRequestController = loader.getController();
-            editFriendRequestController.setService(service, dialogStage, mainPage.getUser());
+            editFriendRequestController.setService(mainPage, dialogStage, this.mainPage.getUser());
             dialogStage.show();
         }
         catch (IOException e){
@@ -662,7 +650,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     @FXML
     public void handleAddFriend(){
-        showFriendEditDialog();
+        showFriendEditDialog(mainPage);
     }
 
     @FXML
@@ -673,6 +661,7 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         }
         else{
             mainPage.removeFriend(selectedFriendDTO.getFriend().getFirstName(), selectedFriendDTO.getFriend().getLastName());
+            mainPage.setFriendsList(service.getAllFriendships(mainPage.getFirstName(), mainPage.getLastName()));
             service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.FRIEND_REMOVE, null));
             MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Information", "Friend has been removed");
         }
@@ -687,10 +676,12 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
         switch (status){
             case APPROVED -> {
                 service.respondFriendRequest(sender.getFirstName(),sender.getLastName(),mainPage.getFirstName(),mainPage.getLastName(), "APPROVE");
+                mainPage.setFriendsList(service.getAllFriendships(mainPage.getFirstName(), mainPage.getLastName()));
                 service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.REQUEST_APPROVE, null));
             }
             case REJECTED -> {
                 service.respondFriendRequest(sender.getFirstName(),sender.getLastName(),mainPage.getFirstName(),mainPage.getLastName(), "REJECT");
+                mainPage.setFriendsList(service.getAllFriendships(mainPage.getFirstName(), mainPage.getLastName()));
                 service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.REQUEST_REJECT, null));
             }
         }
@@ -733,9 +724,9 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     @FXML
     public void handleSentReqButton() {
-        if(!initializedSentRequests){
+        if(!mainPage.isInitializedSentRequests()){
             initModelSentRequest();
-            initializedSentRequests = true;
+            mainPage.setInitializedSentRequests(true);
         }
         sentPane.toFront();
         sentPane.setVisible(true);
@@ -744,9 +735,9 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     @FXML
     public void handleReceivedReqButton() {
-        if(!initializedReceivedRequests){
+        if(!mainPage.isInitializedReceivedRequests()){
             initModelReceivedRequest();
-            initializedReceivedRequests = true;
+            mainPage.setInitializedReceivedRequests(true);
         }
         receivedPane.toFront();
         receivedPane.setVisible(true);
@@ -1049,18 +1040,18 @@ public class AccountController implements Observer<UserFriendChangeEvent> {
 
     @FXML
     public void handleMessagesButton() {
-        if(!initializedChatLists){
+        if(!mainPage.isInitializedChatLists()){
             initModelChatsList();
-            initializedChatLists = true;
+            mainPage.setInitializedChatLists(true);
         }
         paneMessages.toFront();
     }
 
     @FXML
     public void handleEventsButton(){
-        if(!initializedEvents){
+        if(!mainPage.isInitializedEvents()){
             initModelEvents(service.getEventsOnPage(0));
-            initializedEvents = true;
+            mainPage.setInitializedEvents(true);
         }
         paneEvents.toFront();
     }

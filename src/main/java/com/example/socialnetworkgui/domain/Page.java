@@ -12,18 +12,74 @@ public class Page {
     private List<FriendRequestDTO> friendRequests;
     private UserFriendshipDbService service;
 
+    private boolean initializedChatLists = false;
+    private boolean initializedFriends = false;
+    private boolean initializedReceivedRequests = false;
+    private boolean initializedSentRequests = false;
+    private boolean initializedEvents = false;
+
     public Page(String firstName, String lastName, List<FriendDTO> friendsList, List<Message> receivedMessages, List<FriendRequestDTO> friendRequests) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.friendsList = friendsList;
         this.receivedMessages = receivedMessages;
         this.friendRequests = friendRequests;
+        setInitialState();
     }
 
     public Page(String firstName, String lastName, List<FriendDTO> friendsList){
         this.firstName = firstName;
         this.lastName = lastName;
         this.friendsList = friendsList;
+        setInitialState();
+    }
+
+    public void setInitialState(){
+        initializedChatLists = false;
+        initializedFriends = false;
+        initializedReceivedRequests = false;
+        initializedSentRequests = false;
+        initializedEvents = false;
+    }
+
+    public boolean isInitializedChatLists() {
+        return initializedChatLists;
+    }
+
+    public void setInitializedChatLists(boolean initializedChatLists) {
+        this.initializedChatLists = initializedChatLists;
+    }
+
+    public boolean isInitializedFriends() {
+        return initializedFriends;
+    }
+
+    public void setInitializedFriends(boolean initializedFriends) {
+        this.initializedFriends = initializedFriends;
+    }
+
+    public boolean isInitializedReceivedRequests() {
+        return initializedReceivedRequests;
+    }
+
+    public void setInitializedReceivedRequests(boolean initializedReceivedRequests) {
+        this.initializedReceivedRequests = initializedReceivedRequests;
+    }
+
+    public boolean isInitializedSentRequests() {
+        return initializedSentRequests;
+    }
+
+    public void setInitializedSentRequests(boolean initializedSentRequests) {
+        this.initializedSentRequests = initializedSentRequests;
+    }
+
+    public boolean isInitializedEvents() {
+        return initializedEvents;
+    }
+
+    public void setInitializedEvents(boolean initializedEvents) {
+        this.initializedEvents = initializedEvents;
     }
 
     public String getFirstName() {

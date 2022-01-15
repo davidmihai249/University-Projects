@@ -1,6 +1,7 @@
 package com.example.socialnetworkgui.controller;
 
 import com.example.socialnetworkgui.MessageAlert;
+import com.example.socialnetworkgui.domain.Page;
 import com.example.socialnetworkgui.domain.User;
 import com.example.socialnetworkgui.domain.validators.RequestException;
 import com.example.socialnetworkgui.domain.validators.ValidationException;
@@ -21,14 +22,16 @@ public class EditFriendRequestController {
     private UserFriendshipDbService service;
     Stage dialogStage;
     User loggedUser;
+    Page mainPage;
 
     @FXML
     private void initialize(){
 
     }
 
-    public void setService(UserFriendshipDbService service, Stage stage, User loggedUser){
-        this.service = service;
+    public void setService(Page mainPage, Stage stage, User loggedUser){
+        this.mainPage = mainPage;
+        this.service = mainPage.getService();
         this.dialogStage = stage;
         this.loggedUser = loggedUser;
     }
@@ -39,6 +42,7 @@ public class EditFriendRequestController {
         String lastName = textFieldLastName.getText();
         User friend = new User(firstName,lastName);
         saveFriendRequest(loggedUser, friend);
+        mainPage.setFriendsList(service.getAllFriendships(mainPage.getFirstName(), mainPage.getLastName()));
         service.notifyObservers(new UserFriendChangeEvent(ChangeEventType.FRIEND_ADD,null));
     }
 

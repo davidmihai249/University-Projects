@@ -5,13 +5,13 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.socialnetworkgui.EventController">
+<AnchorPane prefHeight="400.0" prefWidth="411.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.socialnetworkgui.EventController">
    <children>
-      <TextField fx:id="nameField" layoutX="191.0" layoutY="24.0" prefHeight="25.0" prefWidth="174.0" promptText="Event Name" />
-      <DatePicker fx:id="startDateDatePicker" layoutX="193.0" layoutY="71.0" promptText="Start Date Of The Event" />
-      <DatePicker fx:id="endDateDatePicker" layoutX="191.0" layoutY="120.0" promptText="End Date Of The Event" />
-      <TextField fx:id="descriptionTextField" layoutX="191.0" layoutY="175.0" prefHeight="25.0" prefWidth="174.0" promptText="Event's Description" />
-      <TextField fx:id="locationTextField" layoutX="193.0" layoutY="226.0" prefHeight="25.0" prefWidth="174.0" promptText="Location Of The Event" />
-      <Button fx:id="addButton" layoutX="191.0" layoutY="283.0" mnemonicParsing="false" onAction="#handleAddButton" prefHeight="25.0" prefWidth="174.0" text="Add Event" />
+      <TextField fx:id="nameField" layoutX="119.0" layoutY="55.0" prefHeight="25.0" prefWidth="174.0" promptText="Event Name" />
+      <DatePicker fx:id="startDateDatePicker" layoutX="119.0" layoutY="95.0" promptText="Start Date Of The Event" />
+      <DatePicker fx:id="endDateDatePicker" layoutX="119.0" layoutY="139.0" promptText="End Date Of The Event" />
+      <TextField fx:id="descriptionTextField" layoutX="119.0" layoutY="184.0" prefHeight="25.0" prefWidth="174.0" promptText="Event's Description" />
+      <TextField fx:id="locationTextField" layoutX="119.0" layoutY="225.0" prefHeight="25.0" prefWidth="174.0" promptText="Location Of The Event" />
+      <Button fx:id="addButton" layoutX="119.0" layoutY="339.0" mnemonicParsing="false" onAction="#handleAddButton" prefHeight="25.0" prefWidth="174.0" text="Add Event" />
    </children>
 </AnchorPane>
