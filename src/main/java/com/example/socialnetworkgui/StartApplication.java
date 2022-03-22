@@ -40,8 +40,8 @@ public class StartApplication extends Application {
         //String password = ApplicationContext.getPROPERTIES().getProperty("database.socialnetworkgui.password");
 
         String url = "jdbc:postgresql://localhost:5432/SocialNetwork";
-        String username = "postgres";
-        String password = "834617";
+        String username = "";
+        String password = "";
 
         UserDbRepo userRepo = new UserDbRepo(url, username, password, new UserValidator());
         Repository<Tuple<Long>, Friendship> friendshipRepo = new FriendshipDbRepo(url, username, password, new FriendshipValidator());

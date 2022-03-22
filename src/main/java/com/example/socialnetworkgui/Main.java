@@ -22,41 +22,41 @@ public class Main {
 
         UserDbRepo userRepo = new UserDbRepo(
                 "jdbc:postgresql://localhost:5432/SocialNetwork",
-                "postgres",
-                "834617",
+                "",
+                "",
                 new UserValidator());
         Repository<Tuple<Long>, Friendship> friendshipRepo = new FriendshipDbRepo(
                 "jdbc:postgresql://localhost:5432/SocialNetwork",
-                "postgres",
-                "834617",
+                "",
+                "",
                 new FriendshipValidator());
         Repository<Tuple<Long>, FriendRequest> requestRepo = new RequestDbRepo(
                 "jdbc:postgresql://localhost:5432/SocialNetwork",
-                "postgres",
-                "834617",
+                "",
+                "",
                 new RequestValidator());
         Repository<Long, Message> messageRepo = new MessageDbRepo(
                 "jdbc:postgresql://localhost:5432/SocialNetwork",
-                "postgres",
-                "834617",
+                "",
+                "",
                 new MessageValidator(),
                 userRepo
         );
         Repository<Long,Chat> chatRepository = new ChatDBRepo(
                 "jdbc:postgresql://localhost:5432/SocialNetwork",
-                "postgres",
-                "834617"
+                "",
+                ""
         );
         PagingRepository<Long,Event> eventRepository = new EventDBRepository(
                 "jdbc:postgresql://localhost:5432/SocialNetwork",
-                "postgres",
-                "834617",
+                "",
+                "",
                 userRepo
         );
         Repository<Tuple<Long>,Participant> participantRepository = new ParticipantDBRepository(
                 "jdbc:postgresql://localhost:5432/SocialNetwork",
-                "postgres",
-                "834617"
+                "",
+                ""
         );
 
 
