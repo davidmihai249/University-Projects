@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.socialnetworkgui.ChatController">
+   <children>
+      <ListView fx:id="friendsListView" layoutX="14.0" layoutY="18.0" prefHeight="365.0" prefWidth="226.0" />
+      <TextField fx:id="chatNameTextField" layoutX="300.0" layoutY="146.0" prefHeight="26.0" prefWidth="261.0" promptText="Chat Name" />
+      <Button fx:id="addButton" onAction="#handleAddButton" layoutX="300.0" layoutY="201.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="261.0" text="Add New Chat" />
+   </children>
+</AnchorPane>

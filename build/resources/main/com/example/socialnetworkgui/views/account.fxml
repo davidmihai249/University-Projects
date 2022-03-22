@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="777.0" prefWidth="1033.0" stylesheets="@../styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.socialnetworkgui.AccountController">
+   <BorderPane prefHeight="777.0" prefWidth="1033.0">
+      <left>
+         <VBox prefHeight="677.0" prefWidth="200.0" style="-fx-background-color: #8b5cd6;" BorderPane.alignment="CENTER">
+            <Button fx:id="buttonProfilePage" alignment="CENTER" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" onAction="#handleProfileButton" prefHeight="155.0" prefWidth="200.0" textAlignment="CENTER" textFill="WHITE">
+               <font>
+                  <Font name="SansSerif Regular" size="29.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="USER_CIRCLE" size="60" textAlignment="CENTER" wrappingWidth="60.0" />
+               </graphic>
+            </Button>
+            <Label fx:id="labelLoggedUser" alignment="CENTER" prefHeight="66.0" prefWidth="200.0" text="User" textFill="WHITE">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Label>
+            <Button fx:id="buttonFriends" mnemonicParsing="false" onAction="#handleFriendsButton" prefHeight="90.0" prefWidth="330.0" styleClass="button" stylesheets="@../styles/style.css" text="Friends" textFill="WHITE">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="GROUP" />
+               </graphic>
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+            </Button>
+            <Button fx:id="buttonRequests" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleRequestsButton" prefHeight="90.0" prefWidth="330.0" styleClass="button" stylesheets="@../styles/style.css" text="Requests" textFill="WHITE">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="USER_PLUS" />
+               </graphic>
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+            </Button>
+            <Button fx:id="buttonMessages" layoutX="10.0" layoutY="100.0" mnemonicParsing="false" onAction="#handleMessagesButton" prefHeight="90.0" prefWidth="330.0" styleClass="button" stylesheets="@../styles/style.css" text="Messages" textFill="WHITE">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="COMMENTS" />
+               </graphic>
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+            </Button>
+            <Button fx:id="eventButton" mnemonicParsing="false" onAction="#handleEventsButton" prefHeight="96.0" prefWidth="200.0" text="Events" textFill="WHITE">
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="CALENDAR" />
+               </graphic>
+            </Button>
+            <Button fx:id="statisticsButton" mnemonicParsing="false" onAction="#handleStatisticsButton" prefHeight="88.0" prefWidth="200.0" text="Statistics" textFill="WHITE">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="DATABASE" selectionFill="#e1e1e1" />
+               </graphic>
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+            </Button>
+            <Button fx:id="buttonLogOut" layoutX="10.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleLogOut" prefHeight="90.0" prefWidth="330.0" styleClass="button" stylesheets="@../styles/style.css" text="Log Out" textFill="WHITE">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="SIGN_OUT" />
+               </graphic>
+               <font>
+                  <Font name="SansSerif Regular" size="18.0" />
+               </font>
+            </Button>
+         </VBox>
+      </left>
+      <top>
+         <HBox fx:id="topHBox" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <Button fx:id="mainButton" mnemonicParsing="false" prefHeight="99.0" prefWidth="280.0" stylesheets="@../styles/style.css" text="ircus" textFill="WHITE">
+               <font>
+                  <Font name="SansSerif Regular" size="30.0" />
+               </font>
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="CONTAO" />
+               </graphic>
+            </Button>
+         </HBox>
+      </top>
+      <center>
+         <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <Pane fx:id="paneFriends" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
+               <Label layoutY="36.0" prefHeight="76.0" prefWidth="833.0" styleClass="profileLabel" text="Friends: Add or remove friends" textFill="WHITE">
+                  <font>
+                     <Font name="SansSerif Regular" size="24.0" />
+                  </font>
+                  <opaqueInsets>
+                     <Insets />
+                  </opaqueInsets>
+                  <padding>
+                     <Insets left="20.0" />
+                  </padding>
+               </Label>
+               <HBox layoutX="27.0" layoutY="119.0" prefHeight="62.0" prefWidth="312.0">
+                  <Button fx:id="buttonAdd" mnemonicParsing="false" onAction="#handleAddFriend" prefHeight="62.0" prefWidth="156.0" text="Add" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font></Button>
+                  <Button fx:id="buttonRemove" mnemonicParsing="false" onAction="#handleRemoveFriend" prefHeight="62.0" prefWidth="156.0" text="Remove" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font></Button>
+               </HBox>
+               <TableView fx:id="tableFriends" layoutX="23.0" layoutY="197.0" prefHeight="470.0" prefWidth="792.0">
+                  <columns>
+                     <TableColumn fx:id="friendsFirstName" prefWidth="264.0" text="First Name" />
+                     <TableColumn fx:id="friendsLastName" prefWidth="264.0" text="Last Name" />
+                     <TableColumn fx:id="friendsSinceDate" prefWidth="264.0" text="Friends since" />
+                  </columns>
+               </TableView>
+            </Pane>
+            <Pane fx:id="paneRequests" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
+               <Label layoutY="36.0" prefHeight="76.0" prefWidth="833.0" styleClass="profileLabel" text="Requests: See who wants to be friends with you" textFill="WHITE">
+                  <font>
+                     <Font name="SansSerif Regular" size="24.0" />
+                  </font>
+                  <opaqueInsets>
+                     <Insets />
+                  </opaqueInsets>
+                  <padding>
+                     <Insets left="20.0" />
+                  </padding>
+               </Label>
+               <HBox layoutX="503.0" layoutY="119.0" prefHeight="62.0" prefWidth="312.0">
+                  <Button fx:id="buttonSentReq" mnemonicParsing="false" onAction="#handleSentReqButton" prefHeight="62.0" prefWidth="156.0" text="Sent" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="buttonReceivedReq" mnemonicParsing="false" onAction="#handleReceivedReqButton" prefHeight="62.0" prefWidth="156.0" text="Received" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font>
+                  </Button>
+               </HBox>
+               <StackPane layoutY="188.0" prefHeight="487.0" prefWidth="832.0">
+                  <Pane fx:id="receivedPane">
+                     <HBox layoutX="23.0" layoutY="30.0" prefHeight="62.0" prefWidth="312.0">
+                        <Button fx:id="buttonApprove" mnemonicParsing="false" onAction="#handleApproveButton" prefHeight="62.0" prefWidth="156.0" stylesheets="@../styles/style.css" text="Approve">
+                           <font>
+                              <Font name="SansSerif Regular" size="14.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="buttonReject" mnemonicParsing="false" onAction="#handleRejectButton" prefHeight="62.0" prefWidth="156.0" text="Reject">
+                           <font>
+                              <Font name="SansSerif Regular" size="14.0" />
+                           </font>
+                        </Button>
+                     </HBox>
+                     <TableView fx:id="tableReceivedRequests" layoutX="23.0" layoutY="100.0" prefHeight="375.0" prefWidth="792.0">
+                        <columns>
+                           <TableColumn fx:id="receivedRequestsFirstName" prefWidth="198.0" text="First Name" />
+                           <TableColumn fx:id="receivedRequestsLastName" minWidth="0.0" prefWidth="198.0" text="Last Name" />
+                           <TableColumn fx:id="receivedRequestsStatus" minWidth="8.0" prefWidth="198.0" text="Status" />
+                           <TableColumn fx:id="receivedRequestsDate" prefWidth="198.0" text="Date" />
+                        </columns>
+                     </TableView>
+                  </Pane>
+                  <Pane fx:id="sentPane">
+                     <HBox layoutX="23.0" layoutY="30.0" prefHeight="62.0" prefWidth="156.0">
+                        <Button fx:id="buttonUnsend" mnemonicParsing="false" onAction="#handleUnsendButton" prefHeight="62.0" prefWidth="156.0" text="Unsend" textFill="WHITE">
+                           <font>
+                              <Font name="SansSerif Regular" size="14.0" />
+                           </font>
+                        </Button>
+                     </HBox>
+                     <TableView fx:id="tableSentRequests" layoutX="23.0" layoutY="100.0" prefHeight="375.0" prefWidth="792.0">
+                        <columns>
+                           <TableColumn fx:id="sentRequestsFirstName" prefWidth="198.0" text="First Name" />
+                           <TableColumn fx:id="sentRequestsLastName" minWidth="0.0" prefWidth="198.0" text="Last Name" />
+                           <TableColumn fx:id="sentRequestsStatus" minWidth="8.0" prefWidth="198.0" text="Status" />
+                           <TableColumn fx:id="sentRequestsDate" prefWidth="198.0" text="Date" />
+                        </columns>
+                     </TableView>
+                  </Pane>
+               </StackPane>
+            </Pane>
+            <Pane fx:id="paneMessages" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
+               <Label layoutY="36.0" prefHeight="76.0" prefWidth="833.0" styleClass="profileLabel" text="Messages: Chat with your friends" textFill="WHITE">
+                  <font>
+                     <Font name="SansSerif Regular" size="24.0" />
+                  </font>
+                  <opaqueInsets>
+                     <Insets />
+                  </opaqueInsets>
+                  <padding>
+                     <Insets left="20.0" />
+                  </padding>
+               </Label>
+               <TableView fx:id="tableChatFriends" layoutX="14.0" layoutY="127.0" onMouseClicked="#setListChat" prefHeight="473.0" prefWidth="215.0">
+                  <columns>
+                     <TableColumn fx:id="chatColumn" maxWidth="215.0" prefWidth="215.0" text="Chats" />
+                  </columns>
+               </TableView>
+               <ListView fx:id="listViewConversation" layoutX="246.0" layoutY="127.0" prefHeight="474.0" prefWidth="577.0" />
+               <TextField fx:id="textFieldMessage" layoutX="246.0" layoutY="611.0" prefHeight="22.0" prefWidth="499.0" promptText="Type you message here" />
+               <Button fx:id="buttonSendMessage" layoutX="754.0" layoutY="611.0" mnemonicParsing="false" onMouseClicked="#handleSendButton" prefHeight="25.0" prefWidth="67.0" text="Send" textFill="WHITE" />
+               <Button fx:id="addChatButton" layoutX="14.0" layoutY="611.0" mnemonicParsing="false" onAction="#handleAddChatButton" prefHeight="25.0" prefWidth="215.0" text="Add New Chat" textFill="WHITE" />
+            </Pane>
+            <Pane fx:id="paneEvents" prefHeight="677.0" prefWidth="833.0" styleClass="tablePane">
+               <Label layoutY="36.0" prefHeight="76.0" prefWidth="833.0" styleClass="profileLabel" text="Events: Meet with your friends" textFill="WHITE">
+                  <font>
+                     <Font name="SansSerif Regular" size="24.0" />
+                  </font>
+                  <opaqueInsets>
+                     <Insets />
+                  </opaqueInsets>
+                  <padding>
+                     <Insets left="20.0" />
+                  </padding>
+               </Label>
+               <HBox layoutX="25.0" layoutY="140.0" prefHeight="62.0" prefWidth="780.0">
+                  <Button fx:id="subscribeButton" mnemonicParsing="false" onAction="#handleNotificationOnButton" prefHeight="62.0" prefWidth="156.0" text="Subscribe" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font></Button>
+                  <Button fx:id="unsubscribeButton" mnemonicParsing="false" onAction="#handleNotificationOffButton" prefHeight="62.0" prefWidth="156.0" text="Unsubscribe" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font></Button>
+                  <Button fx:id="participateButton" mnemonicParsing="false" onAction="#handleParticipateButton" prefHeight="62.0" prefWidth="156.0" text="Participate event" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font></Button>
+                  <Button fx:id="unparticipateButton" mnemonicParsing="false" onAction="#handleUnparticipateButton" prefHeight="62.0" prefWidth="156.0" text="Unparticipate event" textFill="#f8f5f5">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font></Button>
+                  <Button fx:id="addEventButton" mnemonicParsing="false" onAction="#handleAddEventButton" prefHeight="62.0" prefWidth="156.0" text="Add New Event" textFill="WHITE">
+                     <font>
+                        <Font name="SansSerif Regular" size="14.0" />
+                     </font></Button>
+               </HBox>
+               <TableView fx:id="eventTable" layoutX="11.0" layoutY="267.0" prefHeight="345.0" prefWidth="812.0">
+                  <columns>
+                     <TableColumn fx:id="nameColumn" prefWidth="116.0" text="Name" />
+                     <TableColumn fx:id="startDateColumn" prefWidth="116.0" text="Start Date" />
+                     <TableColumn fx:id="endDateColumn" prefWidth="116.0" text="End Date" />
+                     <TableColumn fx:id="descriptionColumn" prefWidth="116.0" text="Description" />
+                     <TableColumn fx:id="locationColumn" prefWidth="116.0" text="Location" />
+                     <TableColumn fx:id="categoryColumn" prefWidth="116.0" text="Category" />
+                     <TableColumn fx:id="organizerColumn" prefWidth="116.0" text="Organizer" />
+                  </columns>
+               </TableView>
+               <ButtonBar layoutX="619.0" layoutY="623.0" prefHeight="40.0" prefWidth="200.0">
+                 <buttons>
+                    <Button fx:id="buttonPreviousPage" mnemonicParsing="false" onAction="#handlePreviousPageButton" text="&lt;" textFill="WHITE" />
+                    <Button fx:id="buttonNextPage" mnemonicParsing="false" onAction="#handleNextPageButton" text="&gt;" textFill="WHITE" />
+                 </buttons>
+               </ButtonBar>
+            </Pane>
+            <Pane fx:id="paneStatistics" prefHeight="680.0" prefWidth="835.0" styleClass="tablePane">
+               <Label layoutY="37.0" prefHeight="76.0" prefWidth="833.0" styleClass="profileLabel" text="Statistics: Generate different statistics in a pdf" textFill="WHITE">
+                  <font>
+                     <Font name="SansSerif Regular" size="24.0" />
+                  </font>
+                  <opaqueInsets>
+                     <Insets />
+                  </opaqueInsets>
+                  <padding>
+                     <Insets left="20.0" />
+                  </padding>
+               </Label>
+               <DatePicker fx:id="startDateStatistics" layoutX="314.0" layoutY="225.0" promptText="Start Date" />
+               <DatePicker fx:id="endDateStatistics" layoutX="315.0" layoutY="264.0" promptText="End Date" />
+               <TextField fx:id="firstNameStatistics" layoutX="314.0" layoutY="339.0" prefHeight="25.0" prefWidth="175.0" promptText="Friend First Name" />
+               <TextField fx:id="lastNameStatistics" layoutX="312.0" layoutY="375.0" prefHeight="25.0" prefWidth="178.0" promptText="Friend Last Name" />
+               <Button fx:id="generate1Button" layoutX="209.0" layoutY="462.0" mnemonicParsing="false" onAction="#handlegenerate1Button" prefHeight="33.0" prefWidth="383.0" text="Friends &amp; Messages" textFill="WHITE">
+                  <font>
+                     <Font name="SansSerif Regular" size="18.0" />
+                  </font>
+               </Button>
+               <Button fx:id="generate2Button" layoutX="209.0" layoutY="516.0" mnemonicParsing="false" onAction="#handlegenerate2Button" prefHeight="33.0" prefWidth="383.0" text="Messages from a friend" textFill="WHITE">
+                  <font>
+                     <Font name="SansSerif Regular" size="18.0" />
+                  </font>
+               </Button>
+            </Pane>
+            <Pane fx:id="paneProfile" prefHeight="200.0" prefWidth="200.0" styleClass="tablePane">
+               <ImageView fx:id="gifImageView" fitHeight="362.0" fitWidth="480.0" layoutX="177.0" layoutY="158.0" pickOnBounds="true" preserveRatio="true" />
+               <Label fx:id="labelProfile" layoutY="37.0" prefHeight="76.0" prefWidth="833.0" styleClass="profileLabel" text="Logged in as: " textFill="WHITE">
+                  <font>
+                     <Font name="SansSerif Regular" size="24.0" />
+                  </font>
+                  <opaqueInsets>
+                     <Insets />
+                  </opaqueInsets>
+                  <padding>
+                     <Insets left="20.0" />
+                  </padding>
+               </Label>
+            </Pane>
+         </StackPane>
+      </center>
+   </BorderPane>
+</AnchorPane>
